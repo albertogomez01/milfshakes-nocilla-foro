@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Unlock, Share2, Copy, Check, ShieldCheck, Crown, Smartphone, FolderCode, MapPin } from 'lucide-react';
+import { Lock, Unlock, Share2, Copy, Check, Crown, Smartphone, FolderCode, MapPin } from 'lucide-react';
 
 const REAL_SECRET_CODES = [
   {
@@ -48,17 +48,36 @@ export default function CodeVaultWidget({ activeProfile }) {
   const progressPercent = isAdmin ? 100 : Math.min(100, Math.round((shareCount / requiredShares) * 100));
 
   const forumUrl = 'https://milfshakes-nocilla-foro.vercel.app';
-  const shareText = encodeURIComponent(
-    '¡Entra en el Foro de Milfshakes x Nocilla para descubrir los códigos del reto! 🥤🍫 ' + forumUrl
-  );
+  const shareTitle = 'Milfshakes x Nocilla Foro';
+  const shareMessage = '¡Entra en el Foro de Milfshakes x Nocilla para descubrir los códigos del reto! 🥤🍫';
+  const shareTextEncoded = encodeURIComponent(shareMessage + ' ' + forumUrl);
+
+  // Native Android & iPhone Web Share API handler
+  const handleNativeMobileShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareMessage,
+          url: forumUrl,
+        });
+        incrementShare();
+      } catch (err) {
+        // Fallback to copy link if user cancelled or unsupported
+        handleCopyShareLink();
+      }
+    } else {
+      handleCopyShareLink();
+    }
+  };
 
   const handleShareTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${shareTextEncoded}`, '_blank');
     incrementShare();
   };
 
   const handleShareWhatsApp = () => {
-    window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?text=${shareTextEncoded}`, '_blank');
     incrementShare();
   };
 
@@ -92,13 +111,13 @@ export default function CodeVaultWidget({ activeProfile }) {
           : 'linear-gradient(135deg, rgba(229,168,59,0.12) 0%, rgba(20,13,9,0.95) 100%)',
         border: isAdmin ? '1px solid #E5A83B' : isUnlocked ? '1px solid #4CAF50' : '1px solid var(--border-card)',
         borderRadius: '20px',
-        padding: '1.5rem',
+        padding: '1.25rem 1.5rem',
         boxShadow: isAdmin
           ? '0 10px 30px rgba(229,168,59,0.25)'
           : isUnlocked
           ? '0 10px 30px rgba(76,175,80,0.2)'
           : '0 10px 30px rgba(0,0,0,0.3)',
-        marginBottom: '1.5rem',
+        marginBottom: '1.25rem',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -247,7 +266,7 @@ export default function CodeVaultWidget({ activeProfile }) {
         })}
       </div>
 
-      {/* Share Actions (Hidden for Admin) */}
+      {/* Share Actions for Mobile Android & iPhone */}
       {!isUnlocked && !isAdmin && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
@@ -289,12 +308,12 @@ export default function CodeVaultWidget({ activeProfile }) {
           </div>
 
           <button
-            onClick={handleCopyShareLink}
+            onClick={handleNativeMobileShare}
             className="btn-primary"
             style={{ width: '100%', justifyContent: 'center', fontSize: '0.85rem', marginTop: '0.2rem' }}
           >
             {copiedLink ? <Check size={16} /> : <Share2 size={16} />}
-            <span>{copiedLink ? '¡Enlace copiado! (+1)' : 'Copiar Enlace para 1 Amigo (+1)'}</span>
+            <span>{copiedLink ? '¡Enlace copiado! (+1)' : '📱 Compartir en Móvil (+1)'}</span>
           </button>
         </div>
       )}
