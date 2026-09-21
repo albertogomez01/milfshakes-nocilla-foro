@@ -365,7 +365,7 @@ export default function App() {
         <TwitterViralBanner />
 
         {/* Sección Mapa Interactivo de España Integrado Nativamente */}
-        <SpainMapSection />
+        <SpainMapSection activeProfile={activeProfile} />
 
         {/* Layout Grid */}
         <div className="main-layout">

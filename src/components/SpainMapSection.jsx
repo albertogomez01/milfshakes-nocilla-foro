@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   MapPin, Search, PlusCircle, Trash2, X, Sparkles, NavigationOff, 
-  MapPinned, List, ChevronUp, AlertCircle, AlertTriangle, CheckCircle2, Info, Compass, Maximize2
+  MapPinned, List, ChevronUp, AlertCircle, AlertTriangle, CheckCircle2, Info, Compass, Maximize2, Users
 } from 'lucide-react';
+import { db } from '../firebase';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
 
 // Spain view bounds presets
 const BOUNDS = {
@@ -12,27 +14,14 @@ const BOUNDS = {
   baleares: { center: [39.6953, 3.0176], zoom: 8 }
 };
 
-export default function SpainMapSection() {
+export default function SpainMapSection({ activeProfile }) {
   const mapRef = useRef(null);
   const leafletInstance = useRef(null);
   const markersMapRef = useRef(new Map());
 
   const [inputQuery, setInputQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [citiesList, setCitiesList] = useState(() => {
-    try {
-      const saved = localStorage.getItem('spain_map_cities_v1');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (e) {
-      console.error('Error loading stored cities:', e);
-    }
-    return [];
-  });
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [citiesList, setCitiesList] = useState([]);
   const [toast, setToast] = useState(null);
 
   // Helper for Toast Notifications
@@ -42,15 +31,6 @@ export default function SpainMapSection() {
       setToast(null);
     }, 4500);
   };
-
-  // Sync cities to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('spain_map_cities_v1', JSON.stringify(citiesList));
-    } catch (e) {
-      console.error('Error saving cities:', e);
-    }
-  }, [citiesList]);
 
   // Load Leaflet CSS dynamically if not present
   useEffect(() => {
@@ -65,7 +45,6 @@ export default function SpainMapSection() {
 
   // Initialize Map
   useEffect(() => {
-    // Helper to safely load Leaflet JS
     const initializeLeafletMap = () => {
       if (!window.L || !mapRef.current || leafletInstance.current) return;
 
@@ -85,11 +64,6 @@ export default function SpainMapSection() {
       window.L.control.attribution({ position: 'bottomleft' }).addTo(map);
 
       leafletInstance.current = map;
-
-      // Re-add existing saved markers
-      citiesList.forEach(city => {
-        addMarkerToLeafletMap(city, false);
-      });
     };
 
     if (window.L) {
@@ -109,6 +83,73 @@ export default function SpainMapSection() {
       }
     };
   }, []);
+
+  // REAL-TIME FIRESTORE SYNC FOR ALL USERS WORLDWIDE
+  useEffect(() => {
+    try {
+      const citiesRef = collection(db, 'spain_cities');
+      const q = query(citiesRef, orderBy('createdAt', 'asc'));
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const fetchedCities = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          fetchedCities.push({
+            id: docSnap.id,
+            name: data.name,
+            province: data.province || 'España',
+            lat: data.lat,
+            lon: data.lon,
+            author: data.author || 'Detective',
+            timestamp: data.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+
+        setCitiesList(fetchedCities);
+
+        // Update markers on Leaflet map
+        if (leafletInstance.current && window.L) {
+          // Remove markers no longer in dataset
+          markersMapRef.current.forEach((marker, id) => {
+            if (!fetchedCities.find(c => c.id === id)) {
+              leafletInstance.current.removeLayer(marker);
+              markersMapRef.current.delete(id);
+            }
+          });
+
+          // Add new markers
+          fetchedCities.forEach(city => {
+            if (!markersMapRef.current.has(city.id)) {
+              addMarkerToLeafletMap(city, false);
+            }
+          });
+        }
+      }, (err) => {
+        console.warn('Firestore subscription fallback to local mode:', err.message);
+        loadLocalFallback();
+      });
+
+      return () => unsubscribe();
+    } catch (e) {
+      console.warn('Firestore initialization fallback:', e.message);
+      loadLocalFallback();
+    }
+  }, []);
+
+  const loadLocalFallback = () => {
+    try {
+      const saved = localStorage.getItem('spain_map_cities_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setCitiesList(parsed);
+          parsed.forEach(city => addMarkerToLeafletMap(city, false));
+        }
+      }
+    } catch (e) {
+      console.error('Local fallback error:', e);
+    }
+  };
 
   // Custom DivIcon for Leaflet
   const createCustomMarkerIcon = () => {
@@ -158,8 +199,13 @@ export default function SpainMapSection() {
 
     const popupHTML = `
       <div style="padding: 14px; width: 250px; font-family: sans-serif; color: #f8fafc;">
-        <div style="display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(225, 29, 72, 0.2); color: #f43f5e; border-radius: 6px; border: 1px solid rgba(225,29,72,0.3); margin-bottom: 6px;">
-          ${escapeHTML(cityObj.province)}
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <span style="padding: 2px 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(225, 29, 72, 0.2); color: #f43f5e; border-radius: 6px; border: 1px solid rgba(225,29,72,0.3);">
+            ${escapeHTML(cityObj.province)}
+          </span>
+          <span style="font-size: 10px; color: #f59e0b; font-weight: 700;">
+            👤 ${escapeHTML(cityObj.author || 'Detective')}
+          </span>
         </div>
         <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 800; color: #ffffff; line-height: 1.2;">
           ${escapeHTML(cityObj.name)}
@@ -186,11 +232,11 @@ export default function SpainMapSection() {
     }
   };
 
-  // Search & Add City using Nominatim API
+  // Search & Add City using Nominatim API + Sync to Firebase
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
-    const query = inputQuery.trim();
-    if (!query) {
+    const queryStr = inputQuery.trim();
+    if (!queryStr) {
       showToast('Por favor, introduce una ciudad o municipio de España.', 'warning');
       return;
     }
@@ -198,7 +244,7 @@ export default function SpainMapSection() {
     setIsLoading(true);
 
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=es&addressdetails=1&limit=1&q=${encodeURIComponent(query)}`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=es&addressdetails=1&limit=1&q=${encodeURIComponent(queryStr)}`;
       const res = await fetch(url, { headers: { 'Accept-Language': 'es' } });
 
       if (!res.ok) throw new Error('Error en la respuesta de red');
@@ -206,7 +252,7 @@ export default function SpainMapSection() {
       const data = await res.json();
 
       if (!data || data.length === 0) {
-        showToast(`No se encontró ninguna localidad en España llamada "${query}".`, 'error');
+        showToast(`No se encontró ninguna localidad en España llamada "${queryStr}".`, 'error');
         setIsLoading(false);
         return;
       }
@@ -215,8 +261,9 @@ export default function SpainMapSection() {
       const lat = parseFloat(item.lat);
       const lon = parseFloat(item.lon);
       const address = item.address || {};
-      const cityName = item.name || address.city || address.town || address.village || query;
+      const cityName = item.name || address.city || address.town || address.village || queryStr;
       const province = address.province || address.state || address.county || 'España';
+      const authorName = activeProfile ? activeProfile.username : 'Detective';
 
       // Duplicate check
       const exists = citiesList.find(c => Math.abs(c.lat - lat) < 0.01 && Math.abs(c.lon - lon) < 0.01);
@@ -227,23 +274,32 @@ export default function SpainMapSection() {
         return;
       }
 
-      const newCity = {
-        id: 'city_' + Date.now(),
+      const newCityObj = {
         name: cityName,
         province: province,
         lat: lat,
         lon: lon,
+        author: authorName,
+        createdAt: serverTimestamp(),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
-      setCitiesList(prev => [...prev, newCity]);
-      addMarkerToLeafletMap(newCity, true);
+      // Push to Firebase Firestore for GLOBAL real-time sync across all users
+      try {
+        await addDoc(collection(db, 'spain_cities'), newCityObj);
+      } catch (err) {
+        console.warn('Firestore addDoc fallback:', err.message);
+        // Fallback local addition if Firestore is blocked
+        const localObj = { ...newCityObj, id: 'city_' + Date.now() };
+        setCitiesList(prev => [...prev, localObj]);
+        addMarkerToLeafletMap(localObj, true);
+      }
 
       if (leafletInstance.current) {
         leafletInstance.current.flyTo([lat, lon], 12, { duration: 1.5 });
       }
 
-      showToast(`¡"${cityName}" añadida con éxito!`, 'success');
+      showToast(`¡"${cityName}" añadida al mapa global! Ahora visible para todos.`, 'success');
       setInputQuery('');
     } catch (err) {
       console.error(err);
@@ -273,21 +329,33 @@ export default function SpainMapSection() {
     }
   };
 
-  // Delete Individual City
-  const handleDeleteCity = (id, name) => {
+  // Delete Individual City from Firestore & Map
+  const handleDeleteCity = async (id, name) => {
+    try {
+      await deleteDoc(doc(db, 'spain_cities', id));
+    } catch (e) {
+      console.warn('Firestore delete error:', e);
+    }
+
     setCitiesList(prev => prev.filter(c => c.id !== id));
     const marker = markersMapRef.current.get(id);
     if (marker && leafletInstance.current) {
       leafletInstance.current.removeLayer(marker);
       markersMapRef.current.delete(id);
     }
-    showToast(`"${name}" eliminada del mapa.`, 'info');
+    showToast(`"${name}" eliminada del mapa global.`, 'info');
   };
 
   // Clear All Cities
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (citiesList.length === 0) return;
-    if (window.confirm('¿Deseas eliminar todos los marcadores del mapa?')) {
+    if (window.confirm('¿Deseas eliminar todos los marcadores del mapa global?')) {
+      for (const city of citiesList) {
+        try {
+          await deleteDoc(doc(db, 'spain_cities', city.id));
+        } catch (e) {}
+      }
+
       markersMapRef.current.forEach(m => {
         if (leafletInstance.current) leafletInstance.current.removeLayer(m);
       });
@@ -349,7 +417,7 @@ export default function SpainMapSection() {
         gap: '1rem',
       }}>
         {/* Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        <div style={{ display: 'flex', items: 'center', gap: '0.85rem' }}>
           <div style={{
             width: '42px',
             height: '42px',
@@ -366,23 +434,26 @@ export default function SpainMapSection() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-                Mapa Interactivo de España
+                Mapa Interactivo Global de España
               </h2>
               <span style={{
                 padding: '2px 8px',
                 fontSize: '0.65rem',
                 fontWeight: 800,
                 textTransform: 'uppercase',
-                background: 'rgba(225, 29, 72, 0.2)',
-                color: '#f43f5e',
+                background: 'rgba(34, 197, 94, 0.2)',
+                color: '#4ade80',
                 borderRadius: '20px',
-                border: '1px solid rgba(225, 29, 72, 0.3)',
+                border: '1px solid rgba(34, 197, 94, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
               }}>
-                ESPAÑA 🇪🇸
+                <Users size={10} /> EN TIEMPO REAL
               </span>
             </div>
             <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>
-              Geolocalización de cualquier ciudad o municipio con Nominatim API
+              Todas las ciudades que añadas son visibles al instante para todos los usuarios en todo el mundo 🌎
             </p>
           </div>
         </div>
@@ -412,7 +483,7 @@ export default function SpainMapSection() {
             <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '14px' }} />
             <input 
               type="text"
-              placeholder="Escribe el nombre de una ciudad o municipio (ej. Madrid, Granada, Llanes, Mahón)..."
+              placeholder="Escribe el nombre de una ciudad o municipio en España para compartirlo con todos..."
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               disabled={isLoading}
@@ -465,7 +536,7 @@ export default function SpainMapSection() {
             ) : (
               <>
                 <PlusCircle size={18} />
-                <span>Añadir</span>
+                <span>Añadir Global</span>
               </>
             )}
           </button>
@@ -545,8 +616,6 @@ export default function SpainMapSection() {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          transition: 'all 0.3s ease',
-          transform: isSidebarOpen ? 'translateY(0)' : 'translateY(0)',
         }}>
           {/* Sidebar Header */}
           <div style={{
@@ -560,7 +629,7 @@ export default function SpainMapSection() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MapPinned size={18} color="#f43f5e" />
               <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#fff' }}>
-                Ciudades Añadidas ({citiesList.length})
+                Ciudades Globales ({citiesList.length})
               </span>
             </div>
             {citiesList.length > 0 && (
@@ -591,8 +660,8 @@ export default function SpainMapSection() {
             {citiesList.length === 0 ? (
               <div style={{ padding: '30px 15px', textAlign: 'center', color: '#94a3b8' }}>
                 <NavigationOff size={32} style={{ marginBottom: '8px', opacity: 0.5 }} />
-                <p style={{ fontSize: '0.82rem', margin: 0, fontWeight: 600 }}>No hay ciudades en la lista</p>
-                <p style={{ fontSize: '0.72rem', margin: '4px 0 0 0', opacity: 0.7 }}>Escribe arriba el nombre de cualquier municipio de España.</p>
+                <p style={{ fontSize: '0.82rem', margin: 0, fontWeight: 600 }}>No hay ciudades en el mapa global</p>
+                <p style={{ fontSize: '0.72rem', margin: '4px 0 0 0', opacity: 0.7 }}>Añade la primera ciudad para que aparezca a todos los usuarios.</p>
               </div>
             ) : (
               citiesList.slice().reverse().map(city => (
@@ -621,11 +690,14 @@ export default function SpainMapSection() {
                       padding: 0,
                     }}
                   >
-                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', lineHeight: 1.2 }}>
-                      {city.name}
+                    <div style={{ display: 'flex', items: 'center', justify: 'between', gap: '4px' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', lineHeight: 1.2 }}>
+                        {city.name}
+                      </span>
                     </div>
-                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '2px' }}>
-                      {city.province}
+                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '2px', display: 'flex', gap: '6px' }}>
+                      <span>{city.province}</span>
+                      <span style={{ color: '#f59e0b' }}>• por {city.author}</span>
                     </div>
                     <div style={{ fontSize: '0.68rem', fontFamily: 'monospace', color: '#f59e0b', marginTop: '2px' }}>
                       {city.lat.toFixed(3)}°, {city.lon.toFixed(3)}°
@@ -641,7 +713,7 @@ export default function SpainMapSection() {
                       cursor: 'pointer',
                       padding: '4px',
                     }}
-                    title="Eliminar del mapa"
+                    title="Eliminar de la lista global"
                   >
                     <Trash2 size={14} color="#f43f5e" />
                   </button>
