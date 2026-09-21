@@ -14,11 +14,20 @@ import { Milk, Sparkles, MessageSquare, ShieldCheck, HelpCircle } from 'lucide-r
 
 const INITIAL_PROFILES = [
   {
+    id: 'user_admin',
+    username: 'albertogomez01',
+    badge: '👑 Admin / Creador',
+    bio: 'Administrador principal de la comunidad y del reto.',
+    avatarColor: '#E5A83B',
+    reputation: 999,
+    isAdmin: true,
+  },
+  {
     id: 'user_1',
     username: 'HunterPro',
     badge: 'Hunter Pro',
     bio: 'Especialista en resolución de retos web y desofuscación.',
-    avatarColor: '#E5A83B',
+    avatarColor: '#FF3366',
     reputation: 140,
   },
   {
@@ -26,16 +35,8 @@ const INITIAL_PROFILES = [
     username: 'NocillaMaster',
     badge: 'Nocilla Mod',
     bio: 'Moderador del foro y entusiasta del chocolate.',
-    avatarColor: '#FF3366',
-    reputation: 210,
-  },
-  {
-    id: 'user_3',
-    username: 'ChocoHacker',
-    badge: 'Investigador',
-    bio: 'Analizando las pistas del reto paso a paso.',
     avatarColor: '#4CAF50',
-    reputation: 85,
+    reputation: 210,
   },
 ];
 
@@ -121,7 +122,7 @@ export default function App() {
   });
 
   const [activeProfileId, setActiveProfileId] = useState(() => {
-    return localStorage.getItem('milfshakes_nocilla_active_profile') || 'user_1';
+    return localStorage.getItem('milfshakes_nocilla_active_profile') || 'user_admin';
   });
 
   // Posts State
@@ -380,8 +381,8 @@ export default function App() {
 
           {/* Sidebar */}
           <aside className="sidebar">
-            {/* Code Vault Unlock Widget requiring 5 shares */}
-            <CodeVaultWidget />
+            {/* Code Vault Unlock Widget with Admin bypass */}
+            <CodeVaultWidget activeProfile={activeProfile} />
 
             <CommunityPoll />
 

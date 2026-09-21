@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Unlock, Share2, Copy, Check, Sparkles, Send, Gift, ShieldAlert } from 'lucide-react';
+import { Lock, Unlock, Share2, Copy, Check, ShieldCheck, Crown, Smartphone, FolderCode, MapPin } from 'lucide-react';
 
-const SECRET_CODES = [
-  { level: 'Nivel 1 - Archivo Retro', key: 'MILFSHAKE_STRAWBERRY_2026', hint: 'Clave de acceso al sistema retro del nivel 1.' },
-  { level: 'Nivel 2 - Carpeta Oculta /assets', key: 'NOCILLA_CHOCO_HAZELNUT_PASS', hint: 'Contraseña para desofuscar el bundle en JS.' },
-  { level: 'Nivel 3 - Bóveda Final del Reto', key: 'SECRET_FLAG{Nocilla_x_Milfshakes_Master_Solver}', hint: 'Código de victoria y trofeo del reto.' },
+const REAL_SECRET_CODES = [
+  {
+    level: '📱 Teléfono',
+    key: '662552',
+    hint: 'Código de desbloqueo para el teléfono del reto.',
+    icon: Smartphone,
+  },
+  {
+    level: '📁 Carpeta de Codificación',
+    key: '369253',
+    hint: 'Contraseña para la carpeta de codificación.',
+    icon: FolderCode,
+  },
+  {
+    level: '📍 Carpeta de Localizaciones',
+    key: '11770',
+    hint: 'Clave de acceso a la carpeta de localizaciones.',
+    icon: MapPin,
+  },
 ];
 
-export default function CodeVaultWidget() {
+export default function CodeVaultWidget({ activeProfile }) {
   const [shareCount, setShareCount] = useState(() => {
     const saved = localStorage.getItem('milfshakes_nocilla_share_count');
     return saved ? parseInt(saved, 10) : 0;
@@ -20,9 +35,17 @@ export default function CodeVaultWidget() {
     localStorage.setItem('milfshakes_nocilla_share_count', shareCount.toString());
   }, [shareCount]);
 
+  // Admin Detection
+  const isAdmin =
+    activeProfile?.isAdmin ||
+    activeProfile?.username?.toLowerCase() === 'albertogomez01' ||
+    activeProfile?.username?.toLowerCase() === 'admin' ||
+    activeProfile?.badge?.toLowerCase().includes('admin') ||
+    activeProfile?.badge?.toLowerCase().includes('creador');
+
   const requiredShares = 5;
-  const isUnlocked = shareCount >= requiredShares;
-  const progressPercent = Math.min(100, Math.round((shareCount / requiredShares) * 100));
+  const isUnlocked = isAdmin || shareCount >= requiredShares;
+  const progressPercent = isAdmin ? 100 : Math.min(100, Math.round((shareCount / requiredShares) * 100));
 
   const forumUrl = 'https://milfshakes-nocilla-foro.vercel.app';
   const shareText = encodeURIComponent(
@@ -47,7 +70,7 @@ export default function CodeVaultWidget() {
   };
 
   const incrementShare = () => {
-    if (shareCount < requiredShares) {
+    if (!isAdmin && shareCount < requiredShares) {
       setShareCount((prev) => prev + 1);
     }
   };
@@ -62,115 +85,170 @@ export default function CodeVaultWidget() {
     <div
       className="widget-card"
       style={{
-        background: isUnlocked
+        background: isAdmin
+          ? 'linear-gradient(135deg, rgba(229,168,59,0.2) 0%, rgba(20,13,9,0.95) 100%)'
+          : isUnlocked
           ? 'linear-gradient(135deg, rgba(76,175,80,0.15) 0%, rgba(20,13,9,0.95) 100%)'
           : 'linear-gradient(135deg, rgba(229,168,59,0.12) 0%, rgba(20,13,9,0.95) 100%)',
-        border: isUnlocked ? '1px solid #4CAF50' : '1px solid var(--accent-gold)',
+        border: isAdmin ? '1px solid #E5A83B' : isUnlocked ? '1px solid #4CAF50' : '1px solid var(--border-card)',
         borderRadius: '20px',
         padding: '1.5rem',
-        boxShadow: isUnlocked ? '0 10px 30px rgba(76,175,80,0.2)' : '0 10px 30px rgba(229,168,59,0.15)',
+        boxShadow: isAdmin
+          ? '0 10px 30px rgba(229,168,59,0.25)'
+          : isUnlocked
+          ? '0 10px 30px rgba(76,175,80,0.2)'
+          : '0 10px 30px rgba(0,0,0,0.3)',
         marginBottom: '1.5rem',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <div className="widget-title" style={{ margin: 0, color: isUnlocked ? '#4CAF50' : 'var(--accent-gold)' }}>
-          {isUnlocked ? <Unlock size={22} color="#4CAF50" /> : <Lock size={22} color="var(--accent-gold)" />}
-          <span>{isUnlocked ? '🔓 Bóveda de Códigos DESBLOQUEADA' : '🔒 Bóveda de Códigos del Reto'}</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div className="widget-title" style={{ margin: 0, color: isAdmin ? '#E5A83B' : isUnlocked ? '#4CAF50' : 'var(--accent-gold)' }}>
+          {isAdmin ? <Crown size={22} color="#E5A83B" /> : isUnlocked ? <Unlock size={22} color="#4CAF50" /> : <Lock size={22} color="var(--accent-gold)" />}
+          <span>{isAdmin ? '👑 Bóveda Modo Admin' : isUnlocked ? '🔓 Bóveda Desbloqueada' : '🔒 Bóveda de Códigos'}</span>
         </div>
-        <span
-          style={{
-            background: isUnlocked ? 'rgba(76,175,80,0.2)' : 'rgba(229,168,59,0.2)',
-            color: isUnlocked ? '#4CAF50' : 'var(--accent-gold)',
-            fontSize: '0.75rem',
-            fontWeight: 800,
-            padding: '0.2rem 0.6rem',
-            borderRadius: '6px',
-          }}
-        >
-          {shareCount} / {requiredShares} Compartidos
-        </span>
+
+        {isAdmin ? (
+          <span
+            style={{
+              background: 'rgba(229,168,59,0.25)',
+              color: '#E5A83B',
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              padding: '0.2rem 0.65rem',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <Crown size={12} /> Admin Bypass Activo
+          </span>
+        ) : (
+          <span
+            style={{
+              background: isUnlocked ? 'rgba(76,175,80,0.2)' : 'rgba(229,168,59,0.2)',
+              color: isUnlocked ? '#4CAF50' : 'var(--accent-gold)',
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              padding: '0.2rem 0.6rem',
+              borderRadius: '6px',
+            }}
+          >
+            {shareCount} / {requiredShares} Compartidos
+          </span>
+        )}
       </div>
 
       <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-        {isUnlocked
+        {isAdmin
+          ? '👑 Bienvenido @albertogomez01. Como Administrador tienes acceso directo inmediato a todos los códigos sin necesidad de compartir nada.'
+          : isUnlocked
           ? '🎉 ¡Enhorabuena! Has compartido el foro con 5 amigos. Aquí tienes todas las contraseñas del reto al descubierto:'
-          : 'Envía el enlace del foro a 5 amigos distintos para desbloquear y revelar las contraseñas secretas de cada nivel.'}
+          : 'Envía el enlace del foro a 5 amigos distintos para revelar las contraseñas secretas.'}
       </p>
 
-      {/* Progress Bar */}
-      <div
-        style={{
-          width: '100%',
-          height: '10px',
-          background: 'rgba(0,0,0,0.4)',
-          borderRadius: '5px',
-          overflow: 'hidden',
-          marginBottom: '1.25rem',
-          border: '1px solid rgba(255,255,255,0.08)',
-        }}
-      >
+      {/* Progress Bar (Visible for Non-Admins) */}
+      {!isAdmin && (
         <div
           style={{
-            width: `${progressPercent}%`,
-            height: '100%',
-            background: isUnlocked
-              ? 'linear-gradient(90deg, #4CAF50, #8BC34A)'
-              : 'linear-gradient(90deg, var(--accent-gold), #FF5252)',
-            transition: 'width 0.4s ease',
+            width: '100%',
+            height: '10px',
+            background: 'rgba(0,0,0,0.4)',
+            borderRadius: '5px',
+            overflow: 'hidden',
+            marginBottom: '1.25rem',
+            border: '1px solid rgba(255,255,255,0.08)',
           }}
-        />
-      </div>
+        >
+          <div
+            style={{
+              width: `${progressPercent}%`,
+              height: '100%',
+              background: isUnlocked
+                ? 'linear-gradient(90deg, #4CAF50, #8BC34A)'
+                : 'linear-gradient(90deg, var(--accent-gold), #FF5252)',
+              transition: 'width 0.4s ease',
+            }}
+          />
+        </div>
+      )}
 
       {/* Codes List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
-        {SECRET_CODES.map((item, idx) => (
-          <div
-            key={idx}
-            style={{
-              background: 'rgba(0,0,0,0.35)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: '10px',
-              padding: '0.75rem 1rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '0.75rem',
-            }}
-          >
-            <div>
-              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-gold)' }}>{item.level}</div>
-              <div
-                style={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.95rem',
-                  fontWeight: 800,
-                  letterSpacing: isUnlocked ? '1px' : '3px',
-                  color: isUnlocked ? '#FFF' : 'var(--text-muted)',
-                  marginTop: '2px',
-                  filter: isUnlocked ? 'none' : 'blur(4px)',
-                  userSelect: isUnlocked ? 'all' : 'none',
-                }}
-              >
-                {isUnlocked ? item.key : '••••••••••••••••••••'}
-              </div>
-            </div>
+        {REAL_SECRET_CODES.map((item, idx) => {
+          const IconComp = item.icon;
+          return (
+            <div
+              key={idx}
+              style={{
+                background: 'rgba(0,0,0,0.35)',
+                border: isAdmin ? '1px solid rgba(229,168,59,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '12px',
+                padding: '0.85rem 1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: isAdmin ? 'rgba(229,168,59,0.2)' : 'rgba(255,255,255,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <IconComp size={18} color={isAdmin ? '#E5A83B' : 'var(--accent-gold)'} />
+                </div>
 
-            {isUnlocked && (
-              <button
-                className="btn-secondary"
-                onClick={() => handleCopyCode(item.key, idx)}
-                style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}
-              >
-                {copiedCodeIndex === idx ? <Check size={14} color="#4CAF50" /> : <Copy size={14} />}
-                <span>{copiedCodeIndex === idx ? 'Copiado' : 'Copiar'}</span>
-              </button>
-            )}
-          </div>
-        ))}
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-gold)' }}>{item.level}</div>
+                  <div
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: '1.1rem',
+                      fontWeight: 800,
+                      letterSpacing: isUnlocked ? '2px' : '3px',
+                      color: isUnlocked ? '#FFF' : 'var(--text-muted)',
+                      marginTop: '2px',
+                      filter: isUnlocked ? 'none' : 'blur(4px)',
+                      userSelect: isUnlocked ? 'all' : 'none',
+                    }}
+                  >
+                    {isUnlocked ? item.key : '••••••'}
+                  </div>
+                </div>
+              </div>
+
+              {isUnlocked && (
+                <button
+                  className="btn-secondary"
+                  onClick={() => handleCopyCode(item.key, idx)}
+                  style={{
+                    padding: '0.4rem 0.75rem',
+                    fontSize: '0.85rem',
+                    background: isAdmin ? 'rgba(229,168,59,0.15)' : undefined,
+                    borderColor: isAdmin ? 'rgba(229,168,59,0.4)' : undefined,
+                    color: isAdmin ? '#E5A83B' : undefined,
+                  }}
+                >
+                  {copiedCodeIndex === idx ? <Check size={14} color="#4CAF50" /> : <Copy size={14} />}
+                  <span>{copiedCodeIndex === idx ? 'Copiado' : 'Copiar'}</span>
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Share Actions */}
-      {!isUnlocked && (
+      {/* Share Actions (Hidden for Admin) */}
+      {!isUnlocked && !isAdmin && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
             Comparte para sumar invitar (+1 por amigo):
@@ -205,7 +283,7 @@ export default function CodeVaultWidget() {
                 justifyContent: 'center',
               }}
             >
-              <Send size={14} />
+              <Share2 size={14} />
               <span>WhatsApp</span>
             </button>
           </div>
