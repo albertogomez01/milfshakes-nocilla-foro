@@ -6,6 +6,7 @@ import PostDetailModal from './components/PostDetailModal';
 import CreatePostModal from './components/CreatePostModal';
 import ProfileModal from './components/ProfileModal';
 import TwitterAuthModal from './components/TwitterAuthModal';
+import AuthGate from './components/AuthGate';
 import CommunityPoll from './components/CommunityPoll';
 import { Milk, Sparkles, MessageSquare, ShieldCheck, HelpCircle } from 'lucide-react';
 
@@ -77,7 +78,7 @@ const INITIAL_POSTS = [
     categoryLabel: '🎨 Memes & FanArt',
     author: 'MemeShake',
     authorBadge: 'Fan Nocilla',
-    content: 'Llevaba 3 horas intentando descifrar un array de charcodes para que al final la alerta me mostrara: "¡Buen intento, pero primero tómate un Milfshake de Nocilla!" 💀🥤',
+    content: 'Llevaba 3 horas intentando descifrar un array de charcodes para que al final la alerta me mostrara: "¡Buen intento, pero primero tómate un Milfshakes de Nocilla!" 💀🥤',
     tags: ['Memes', 'EasterEgg', 'Humor'],
     votes: 128,
     userVote: null,
@@ -103,6 +104,11 @@ const INITIAL_POSTS = [
 ];
 
 export default function App() {
+  // Auth Gate State
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('milfshakes_nocilla_auth_logged_in') === 'true';
+  });
+
   // Profiles State
   const [profiles, setProfiles] = useState(() => {
     const saved = localStorage.getItem('milfshakes_nocilla_profiles');
@@ -134,6 +140,11 @@ export default function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isTwitterAuthModalOpen, setIsTwitterAuthModalOpen] = useState(false);
 
+  // Sync Auth State
+  useEffect(() => {
+    localStorage.setItem('milfshakes_nocilla_auth_logged_in', isAuthenticated ? 'true' : 'false');
+  }, [isAuthenticated]);
+
   // Sync Profiles to localStorage
   useEffect(() => {
     localStorage.setItem('milfshakes_nocilla_profiles', JSON.stringify(profiles));
@@ -150,6 +161,21 @@ export default function App() {
 
   // Get active profile object
   const activeProfile = profiles.find((p) => p.id === activeProfileId) || profiles[0];
+
+  // Login Gate Success
+  const handleAuthGateLoginSuccess = (profileObj) => {
+    setProfiles((prev) => {
+      const exists = prev.find((p) => p.id === profileObj.id || p.username.toLowerCase() === profileObj.username.toLowerCase());
+      if (exists) return prev;
+      return [profileObj, ...prev];
+    });
+    setActiveProfileId(profileObj.id);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
 
   // Profile Management Handlers
   const handleCreateProfile = (newProf) => {
@@ -168,6 +194,7 @@ export default function App() {
       return [twitterProfile, ...prev];
     });
     setActiveProfileId(twitterProfile.id);
+    setIsAuthenticated(true);
   };
 
   // Vote handler
@@ -248,6 +275,24 @@ export default function App() {
 
   const totalComments = posts.reduce((acc, p) => acc + (p.comments ? p.comments.length : 0), 0);
 
+  // IF NOT AUTHENTICATED -> RENDER LOCK / AUTH GATE
+  if (!isAuthenticated) {
+    return (
+      <div>
+        <AuthGate
+          onLoginSuccess={handleAuthGateLoginSuccess}
+          onOpenTwitterAuth={() => setIsTwitterAuthModalOpen(true)}
+          onOpenProfileModal={() => setIsProfileModalOpen(true)}
+        />
+        <TwitterAuthModal
+          isOpen={isTwitterAuthModalOpen}
+          onClose={() => setIsTwitterAuthModalOpen(false)}
+          onTwitterLoginSuccess={handleTwitterLoginSuccess}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <Header
@@ -257,6 +302,7 @@ export default function App() {
         activeProfile={activeProfile}
         onOpenProfileModal={() => setIsProfileModalOpen(true)}
         onOpenTwitterAuthModal={() => setIsTwitterAuthModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       <main className="app-container">

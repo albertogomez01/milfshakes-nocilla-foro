@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, PlusCircle, Milk, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Search, PlusCircle, Milk, Sparkles, CheckCircle2, LogOut } from 'lucide-react';
 
 export default function Header({
   searchQuery,
@@ -8,6 +8,7 @@ export default function Header({
   activeProfile,
   onOpenProfileModal,
   onOpenTwitterAuthModal,
+  onLogout,
 }) {
   return (
     <header className="site-header">
@@ -99,6 +100,16 @@ export default function Header({
                 {activeProfile?.badge || 'Miembro'}
               </div>
             </div>
+          </button>
+
+          {/* Botón Cerrar Sesión */}
+          <button
+            onClick={onLogout}
+            className="btn-secondary"
+            title="Cerrar Sesión"
+            style={{ padding: '0.6rem', color: 'var(--text-muted)' }}
+          >
+            <LogOut size={18} />
           </button>
         </div>
       </div>
