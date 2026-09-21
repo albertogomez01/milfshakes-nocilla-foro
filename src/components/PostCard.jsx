@@ -1,7 +1,7 @@
 import React from 'react';
-import { ChevronUp, ChevronDown, MessageSquare, Clock, Tag } from 'lucide-react';
+import { ChevronUp, ChevronDown, MessageSquare, Clock, Tag, Trash2 } from 'lucide-react';
 
-export default function PostCard({ post, onVote, onClick }) {
+export default function PostCard({ post, onVote, onClick, activeProfile, onDelete }) {
   const handleUpvote = (e) => {
     e.stopPropagation();
     onVote(post.id, 'up');
@@ -11,6 +11,15 @@ export default function PostCard({ post, onVote, onClick }) {
     e.stopPropagation();
     onVote(post.id, 'down');
   };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    if (window.confirm('¿Seguro que deseas eliminar este hilo?')) {
+      onDelete(post.id);
+    }
+  };
+
+  const canDelete = activeProfile?.isAdmin || activeProfile?.username === post.author;
 
   return (
     <div className="post-card" onClick={() => onClick(post)}>
@@ -56,6 +65,25 @@ export default function PostCard({ post, onVote, onClick }) {
             <Clock size={14} />
             <span>{post.timeAgo}</span>
           </div>
+
+          {canDelete && onDelete && (
+            <button
+              onClick={handleDelete}
+              title="Eliminar Hilo"
+              style={{
+                marginLeft: 'auto',
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(255,100,100,0.7)',
+                cursor: 'pointer',
+                padding: '0.2rem',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
         </div>
 
         <h2 className="post-title">{post.title}</h2>
@@ -82,3 +110,4 @@ export default function PostCard({ post, onVote, onClick }) {
     </div>
   );
 }
+

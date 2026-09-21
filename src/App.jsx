@@ -64,10 +64,17 @@ export default function App() {
     return localStorage.getItem('milfshakes_nocilla_active_profile') || 'user_admin';
   });
 
-  // Posts State (starts completely empty)
+  // Posts State (Persisted in localStorage across refreshes)
   const [posts, setPosts] = useState(() => {
-    // Clear legacy initial mock posts if any existed in localStorage
-    localStorage.removeItem('milfshakes_nocilla_posts');
+    const saved = localStorage.getItem('milfshakes_nocilla_posts');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        console.error('Error parsing stored posts:', e);
+      }
+    }
     return [];
   });
 
@@ -189,9 +196,25 @@ export default function App() {
     );
   };
 
-  // Create Post
+  // Create Post (persists immediately)
   const handleCreatePost = (newPost) => {
-    setPosts((prev) => [newPost, ...prev]);
+    setPosts((prev) => {
+      const updated = [newPost, ...prev];
+      localStorage.setItem('milfshakes_nocilla_posts', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Delete Post
+  const handleDeletePost = (postId) => {
+    setPosts((prev) => {
+      const updated = prev.filter((p) => p.id !== postId);
+      localStorage.setItem('milfshakes_nocilla_posts', JSON.stringify(updated));
+      return updated;
+    });
+    if (selectedPost && selectedPost.id === postId) {
+      setSelectedPost(null);
+    }
   };
 
   // Filter & Sort Logic
@@ -325,6 +348,8 @@ export default function App() {
                     post={post}
                     onVote={handleVote}
                     onClick={(p) => setSelectedPost(p)}
+                    activeProfile={activeProfile}
+                    onDelete={handleDeletePost}
                   />
                 ))
               ) : (
