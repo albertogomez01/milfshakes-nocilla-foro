@@ -1,20 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { Box, Sparkles, Upload, RotateCw, Play, Pause } from 'lucide-react';
+import React, { useState } from 'react';
+import { Box, Sparkles, RotateCw, Play, Pause, Maximize2 } from 'lucide-react';
 
 export default function ModelViewerWidget() {
-  const [modelSrc, setModelSrc] = useState('/model.glb');
   const [autoRotate, setAutoRotate] = useState(true);
-  const [hasCustomFile, setHasCustomFile] = useState(false);
-  const fileInputRef = useRef(null);
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file && (file.name.endsWith('.glb') || file.name.endsWith('.gltf'))) {
-      const objectUrl = URL.createObjectURL(file);
-      setModelSrc(objectUrl);
-      setHasCustomFile(true);
-    }
-  };
 
   return (
     <div
@@ -33,7 +21,7 @@ export default function ModelViewerWidget() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
         <div className="widget-title" style={{ margin: 0 }}>
           <Box size={20} color="var(--accent-gold)" />
-          <span>Visor 3D Interactivo (.GLB)</span>
+          <span>Artefacto 3D del Expediente</span>
         </div>
 
         <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -44,25 +32,8 @@ export default function ModelViewerWidget() {
             style={{ padding: '0.35rem 0.6rem', fontSize: '0.78rem' }}
           >
             {autoRotate ? <Pause size={14} color="var(--accent-gold)" /> : <Play size={14} />}
-            <span>{autoRotate ? 'Pausar' : 'Rotar'}</span>
+            <span>{autoRotate ? 'Pausar' : 'Girar'}</span>
           </button>
-
-          <button
-            className="btn-primary"
-            onClick={() => fileInputRef.current?.click()}
-            style={{ padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}
-          >
-            <Upload size={14} />
-            <span>Subir tu .GLB</span>
-          </button>
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".glb,.gltf"
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
-          />
         </div>
       </div>
 
@@ -70,10 +41,10 @@ export default function ModelViewerWidget() {
       <div
         style={{
           width: '100%',
-          height: '260px',
-          background: 'radial-gradient(circle at 50% 50%, rgba(229, 168, 59, 0.12) 0%, rgba(0,0,0,0.6) 80%)',
+          height: '280px',
+          background: 'radial-gradient(circle at 50% 50%, rgba(229, 168, 59, 0.15) 0%, rgba(15, 10, 7, 0.85) 80%)',
           borderRadius: '14px',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid rgba(229, 168, 59, 0.25)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -83,19 +54,20 @@ export default function ModelViewerWidget() {
       >
         {/* Render 3D Model using Google's <model-viewer> web component */}
         <model-viewer
-          src={modelSrc}
-          alt="Modelo 3D El Milfterio del Picasso"
+          src="/milfo.glb"
+          alt="Objeto 3D Oficial - El Milfterio del Picasso"
           auto-rotate={autoRotate ? '' : undefined}
           auto-rotate-delay="0"
-          rotation-per-second="30deg"
+          rotation-per-second="25deg"
           camera-controls
-          shadow-intensity="1.5"
+          shadow-intensity="1.8"
           environment-image="neutral"
-          exposure="1.2"
+          exposure="1.25"
           touch-action="pan-y"
+          interaction-prompt="none"
           style={{ width: '100%', height: '100%', background: 'transparent' }}
         >
-          {/* Fallback procedural 3D animation if .glb is loading or empty */}
+          {/* Fallback loading indicator */}
           <div
             slot="poster"
             style={{
@@ -110,15 +82,15 @@ export default function ModelViewerWidget() {
           >
             <div
               style={{
-                width: '64px',
-                height: '64px',
+                width: '56px',
+                height: '56px',
                 borderRadius: '50%',
                 border: '3px solid var(--accent-gold)',
                 borderTopColor: 'transparent',
-                animation: 'spin3d 2s linear infinite',
+                animation: 'spin3d 1.5s linear infinite',
               }}
             />
-            <span>Cargando Modelo 3D (.glb)...</span>
+            <span>Cargando Artefacto 3D (milfo.glb)...</span>
           </div>
         </model-viewer>
 
@@ -129,23 +101,24 @@ export default function ModelViewerWidget() {
             bottom: '10px',
             right: '12px',
             fontSize: '0.72rem',
-            color: 'var(--text-muted)',
-            background: 'rgba(0,0,0,0.6)',
-            padding: '0.2rem 0.5rem',
-            borderRadius: '6px',
+            color: 'var(--accent-gold)',
+            background: 'rgba(0,0,0,0.75)',
+            border: '1px solid rgba(229,168,59,0.3)',
+            padding: '0.25rem 0.6rem',
+            borderRadius: '20px',
             pointerEvents: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
+            gap: '5px',
           }}
         >
           <Sparkles size={12} color="var(--accent-gold)" />
-          <span>Arrastra o gira con el dedo</span>
+          <span>Arrastra para rotar en 360°</span>
         </div>
       </div>
 
-      <div style={{ marginTop: '0.6rem', fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-        💡 Coloca tu archivo en la carpeta <code style={{ color: 'var(--accent-gold)' }}>public/model.glb</code> o usa el botón de subida.
+      <div style={{ marginTop: '0.65rem', fontSize: '0.78rem', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.4' }}>
+        🔍 <strong>milfo.glb</strong> — Modelo tridimensional integrado oficialmente en la plataforma. Forma parte del sistema de investigación del caso.
       </div>
     </div>
   );
