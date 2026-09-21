@@ -6,6 +6,7 @@ import PostDetailModal from './components/PostDetailModal';
 import CreatePostModal from './components/CreatePostModal';
 import ProfileModal from './components/ProfileModal';
 import TwitterAuthModal from './components/TwitterAuthModal';
+import TwitterViralBanner from './components/TwitterViralBanner';
 import AuthGate from './components/AuthGate';
 import CommunityPoll from './components/CommunityPoll';
 import { Milk, Sparkles, MessageSquare, ShieldCheck, HelpCircle } from 'lucide-react';
@@ -339,6 +340,9 @@ export default function App() {
             </div>
           </div>
         </section>
+
+        {/* Visual Twitter Viral Share Banner */}
+        <TwitterViralBanner />
 
         {/* Layout Grid */}
         <div className="main-layout">
