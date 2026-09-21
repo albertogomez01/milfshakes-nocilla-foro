@@ -8,6 +8,7 @@ import ProfileModal from './components/ProfileModal';
 import TwitterAuthModal from './components/TwitterAuthModal';
 import TwitterViralBanner from './components/TwitterViralBanner';
 import CodeVaultWidget from './components/CodeVaultWidget';
+import ModelViewerWidget from './components/ModelViewerWidget';
 import AuthGate from './components/AuthGate';
 import CommunityPoll from './components/CommunityPoll';
 import Footer from './components/Footer';
@@ -405,6 +406,9 @@ export default function App() {
 
           {/* Sidebar */}
           <aside className="sidebar">
+            {/* Interactive 3D GLB Model Viewer displaying milfo.glb */}
+            <ModelViewerWidget />
+
             {/* Code Vault Unlock Widget with Admin bypass */}
             <CodeVaultWidget activeProfile={activeProfile} />
 
