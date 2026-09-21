@@ -43,71 +43,7 @@ const INITIAL_PROFILES = [
   },
 ];
 
-const INITIAL_POSTS = [
-  {
-    id: 1,
-    title: '🖼️ Análisis del expediente: ¿Qué esconde la fotografía del cuadro Picasso?',
-    category: 'teorias',
-    categoryLabel: '🔍 Teorías y Pistas',
-    author: 'NocillaMaster',
-    authorBadge: 'Nocilla Mod',
-    content: 'Revisando los documentos y fotografías en el terminal de archivos de El Milfterio del Picasso, he encontrado una anotación al reverso del lienzo. ¿Creéis que la combinación de los tres vasos desbloquea la carpeta final?',
-    tags: ['CasoPicasso', 'Investigacion', 'Fotografias'],
-    votes: 56,
-    userVote: null,
-    timeAgo: 'Hace 2 horas',
-    comments: [
-      { id: 101, author: 'ChocoHacker', authorBadge: 'Investigador', text: '¡Totalmente! Si revisas el archivo de la carpeta de codificación, verás que los números coinciden.', timeAgo: 'Hace 1 hora' },
-      { id: 102, author: 'CreamHunter', authorBadge: 'Buscador de Pistas', text: 'Confirmo. En el archivo del teléfono hay una pista de audio clave.', timeAgo: 'Hace 30 min' },
-    ],
-  },
-  {
-    id: 2,
-    title: '⚡ Guía de acceso a las carpetas bloqueadas del terminal del caso',
-    category: 'guias',
-    categoryLabel: '⚡ Guías & Soluciones',
-    author: 'RetroSolver',
-    authorBadge: 'Descifrador',
-    content: 'Paso a paso para revisar las pruebas del expediente:\n1. Revisa los informes de texto e inspecciona las pistas de las grabaciones.\n2. La carpeta de localizaciones contiene el mapa clave.\n3. Recuerda que para optar al premio oficial de 15.000 € debes conservar tus 3 vasos físicos y el ticket de compra.',
-    tags: ['Guia', 'CasoAbierto', 'BasesOficiales'],
-    votes: 94,
-    userVote: 'up',
-    timeAgo: 'Hace 4 horas',
-    comments: [
-      { id: 103, author: 'MilkyWay', authorBadge: 'Fan Nocilla', text: '¡Excelente resumen! Me sirvió para guiarme en el terminal.', timeAgo: 'Hace 2 horas' },
-    ],
-  },
-  {
-    id: 3,
-    title: '🎨 Cuando encuentras una pista oculta en las grabaciones de audio',
-    category: 'memes',
-    categoryLabel: '🎨 Memes & FanArt',
-    author: 'MemeShake',
-    authorBadge: 'Fan Nocilla',
-    content: 'Estuve 20 minutos escuchando en bucle la grabación de audio del caso Picasso pensando que era código morse y resultó ser el sonido de un sorbo de Milfshake 💀🥤',
-    tags: ['Memes', 'Humor', 'Grabaciones'],
-    votes: 142,
-    userVote: null,
-    timeAgo: 'Hace 10 horas',
-    comments: [
-      { id: 104, author: 'NocillaMaster', authorBadge: 'Nocilla Mod', text: 'Jajaja los creadores de la campaña se lucieron con ese detalle.', timeAgo: 'Hace 8 horas' },
-    ],
-  },
-  {
-    id: 4,
-    title: '💬 ¿Qué os parece la interfaz de terminal de archivos de la web del enigma?',
-    category: 'general',
-    categoryLabel: '💬 General & Debate',
-    author: 'VaporSynth',
-    authorBadge: 'Investigador',
-    content: 'La ambientación de caso abierto con documentos, fotografías y reproductor de audio da una sensación genial de investigación policíaca. ¿Alguien ha descifrado ya todas las carpetas?',
-    tags: ['CasoAbierto', 'Debate', 'MisterioPicasso'],
-    votes: 38,
-    userVote: null,
-    timeAgo: 'Hace 1 día',
-    comments: [],
-  },
-];
+const INITIAL_POSTS = [];
 
 export default function App() {
   // Auth Gate State
@@ -128,14 +64,13 @@ export default function App() {
     return localStorage.getItem('milfshakes_nocilla_active_profile') || 'user_admin';
   });
 
-  // Posts State
+  // Posts State (starts completely empty)
   const [posts, setPosts] = useState(() => {
-    const saved = localStorage.getItem('milfshakes_nocilla_posts');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* fallback */ }
-    }
-    return INITIAL_POSTS;
+    // Clear legacy initial mock posts if any existed in localStorage
+    localStorage.removeItem('milfshakes_nocilla_posts');
+    return [];
   });
+
 
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
