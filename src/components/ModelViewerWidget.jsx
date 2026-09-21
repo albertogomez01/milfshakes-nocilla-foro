@@ -117,9 +117,6 @@ export default function ModelViewerWidget() {
         </div>
       </div>
 
-      <div style={{ marginTop: '0.65rem', fontSize: '0.78rem', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.4' }}>
-        🔍 <strong>milfo.glb</strong> — Modelo tridimensional integrado oficialmente en la plataforma. Forma parte del sistema de investigación del caso.
-      </div>
     </div>
   );
 }
