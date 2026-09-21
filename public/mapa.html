@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mapa Interactivo de España | Explorador de Ciudades</title>
+  <meta name="description" content="Aplicación interactiva con mapa de España para buscar, geolocalizar y marcar ciudades y municipios usando Leaflet y Nominatim API." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+            },
+            spanish: {
+              red: '#e11d48',
+              gold: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet CSS & JS CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Base styles & map container */
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      background: #0f172a;
+    }
+
+    /* Custom Leaflet Dark Tiles adjustment & styling */
+    .leaflet-container {
+      background-color: #0b0f19 !important;
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+    }
+
+    /* Custom Leaflet Controls Position */
+    .leaflet-bottom.leaflet-right, .leaflet-top.leaflet-left {
+      z-index: 10 !important;
+    }
+
+    .leaflet-control-zoom {
+      border: none !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+      border-radius: 12px !important;
+      overflow: hidden;
+    }
+
+    .leaflet-control-zoom a {
+      background-color: rgba(15, 23, 42, 0.85) !important;
+      color: #e2e8f0 !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      backdrop-filter: blur(12px);
+    }
+
+    .leaflet-control-zoom a:hover {
+      background-color: rgba(30, 41, 59, 0.95) !important;
+      color: #f8fafc !important;
+    }
+
+    /* Marker Bounce/Drop Animation */
+    .custom-marker-bounce {
+      animation: dropBounce 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.25) forwards;
+    }
+
+    @keyframes dropBounce {
+      0% {
+        transform: translateY(-60px) scale(0.3);
+        opacity: 0;
+      }
+      60% {
+        transform: translateY(6px) scale(1.15);
+        opacity: 1;
+      }
+      80% {
+        transform: translateY(-4px) scale(0.95);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Pulse animation for active pin dot */
+    .pin-pulse {
+      animation: pulseGlow 2s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.6);
+      }
+      70% {
+        box-shadow: 0 0 0 14px rgba(225, 29, 72, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+      }
+    }
+
+    /* Custom Leaflet Popup Styling */
+    .leaflet-popup-content-wrapper {
+      background: rgba(15, 23, 42, 0.92) !important;
+      color: #f1f5f9 !important;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px !important;
+      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.6), 0 0 15px rgba(225, 29, 72, 0.2) !important;
+      padding: 0 !important;
+      overflow: hidden;
+    }
+
+    .leaflet-popup-content {
+      margin: 0 !important;
+      line-height: 1.5 !important;
+    }
+
+    .leaflet-popup-tip {
+      background: rgba(15, 23, 42, 0.92) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .leaflet-container a.leaflet-popup-close-button {
+      color: #94a3b8 !important;
+      padding: 8px 10px 0 0 !important;
+      font-size: 18px !important;
+    }
+
+    .leaflet-container a.leaflet-popup-close-button:hover {
+      color: #f8fafc !important;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(71, 85, 105, 1);
+    }
+
+    /* Glassmorphism panel helper */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Toast Animation */
+    .toast-enter {
+      animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%) translateY(-10px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden text-slate-100 select-none">
+
+  <!-- MAP CONTAINER -->
+  <div id="map"></div>
+
+  <!-- TOP HEADER / SEARCH BAR FLOATING CONTAINER -->
+  <div class="absolute top-4 left-4 right-4 md:left-6 md:right-auto md:w-[460px] z-20 flex flex-col gap-3">
+    
+    <!-- BRAND / TITLE HEADER CARD -->
+    <div class="glass-panel p-4 rounded-2xl shadow-2xl flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 via-amber-500 to-rose-500 flex items-center justify-center shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/40">
+          <i data-lucide="map-pin" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display text-lg font-bold tracking-tight text-white leading-tight">Mapa de España</h1>
+            <span class="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-full">
+              ESPAÑA
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Explorador interactivo de municipios y ciudades</p>
+        </div>
+      </div>
+
+      <!-- Quick View Toggle Dropdown/Buttons -->
+      <div class="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+        <button onclick="setViewPreset('spain')" title="Vista completa de España" class="px-2.5 py-1 text-xs font-semibold rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-all flex items-center gap-1">
+          <span>🇪🇸</span> <span class="hidden sm:inline">Todo</span>
+        </button>
+        <button onclick="setViewPreset('peninsula')" title="Península Ibérica" class="px-2.5 py-1 text-xs font-semibold rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-all">
+          <span>🗺️</span> <span class="hidden sm:inline">Península</span>
+        </button>
+        <button onclick="setViewPreset('canarias')" title="Islas Canarias" class="px-2.5 py-1 text-xs font-semibold rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-all">
+          <span>🏝️</span> <span class="hidden sm:inline">Canarias</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SEARCH INPUT FORM -->
+    <div class="glass-panel p-2.5 rounded-2xl shadow-2xl relative">
+      <form id="search-form" onsubmit="handleSearch(event)" class="relative flex items-center gap-2">
+        <div class="relative flex-1 flex items-center">
+          <i data-lucide="search" class="w-5 h-5 absolute left-3.5 text-slate-400 pointer-events-none"></i>
+          <input 
+            type="text" 
+            id="city-input"
+            placeholder="Escribe una ciudad (ej: Madrid, Sevilla, Llanes)..."
+            autocomplete="off"
+            class="w-full bg-slate-900/90 text-sm text-white placeholder-slate-400 pl-11 pr-10 py-3 rounded-xl border border-slate-700/60 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all"
+          />
+          <!-- Clear Input Button -->
+          <button type="button" id="clear-input-btn" onclick="clearInputField()" class="hidden absolute right-3 text-slate-400 hover:text-white p-1">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          id="submit-btn"
+          class="bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 active:scale-95 text-white font-semibold text-sm px-5 py-3 rounded-xl shadow-lg shadow-rose-600/25 transition-all flex items-center gap-2 disabled:opacity-50 disabled:pointer-events-none shrink-0"
+        >
+          <span id="btn-text" class="flex items-center gap-1.5">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Añadir</span>
+          </span>
+          <span id="btn-spinner" class="hidden flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Buscando...</span>
+          </span>
+        </button>
+      </form>
+
+      <!-- QUICK SUGGESTIONS PILLS -->
+      <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <span class="text-[11px] font-semibold text-slate-400 shrink-0 flex items-center gap-1 pl-1">
+          <i data-lucide="sparkles" class="w-3 h-3 text-amber-400"></i> Sugerencias:
+        </span>
+        <button onclick="quickAddCity('Madrid')" class="px-2.5 py-1 text-xs bg-slate-900/80 hover:bg-rose-500/20 hover:text-rose-300 text-slate-300 rounded-lg border border-slate-800 transition-all shrink-0">Madrid</button>
+        <button onclick="quickAddCity('Barcelona')" class="px-2.5 py-1 text-xs bg-slate-900/80 hover:bg-rose-500/20 hover:text-rose-300 text-slate-300 rounded-lg border border-slate-800 transition-all shrink-0">Barcelona</button>
+        <button onclick="quickAddCity('Sevilla')" class="px-2.5 py-1 text-xs bg-slate-900/80 hover:bg-rose-500/20 hover:text-rose-300 text-slate-300 rounded-lg border border-slate-800 transition-all shrink-0">Sevilla</button>
+        <button onclick="quickAddCity('Valencia')" class="px-2.5 py-1 text-xs bg-slate-900/80 hover:bg-rose-500/20 hover:text-rose-300 text-slate-300 rounded-lg border border-slate-800 transition-all shrink-0">Valencia</button>
+        <button onclick="quickAddCity('Bilbao')" class="px-2.5 py-1 text-xs bg-slate-900/80 hover:bg-rose-500/20 hover:text-rose-300 text-slate-300 rounded-lg border border-slate-800 transition-all shrink-0">Bilbao</button>
+        <button onclick="quickAddCity('Las Palmas de Gran Canaria')" class="px-2.5 py-1 text-xs bg-slate-900/80 hover:bg-rose-500/20 hover:text-rose-300 text-slate-300 rounded-lg border border-slate-800 transition-all shrink-0">Las Palmas</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+
+  <!-- SIDEBAR TOGGLE BUTTON (MOBILE & DESKTOP) -->
+  <button 
+    id="sidebar-toggle-btn"
+    onclick="toggleSidebar()"
+    class="fixed bottom-6 right-6 z-30 bg-slate-900/90 hover:bg-slate-800 text-white p-3.5 rounded-2xl shadow-2xl border border-slate-700/80 backdrop-blur-xl flex items-center gap-2.5 group transition-all active:scale-95"
+  >
+    <div class="relative">
+      <i data-lucide="list" class="w-5 h-5 text-rose-400 group-hover:rotate-12 transition-transform"></i>
+      <span id="badge-count-floating" class="absolute -top-2 -right-2 bg-rose-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+    </div>
+    <span class="font-semibold text-sm pr-1">Historial de Ciudades</span>
+    <i data-lucide="chevron-up" id="sidebar-toggle-icon" class="w-4 h-4 text-slate-400 transition-transform duration-300"></i>
+  </button>
+
+  <!-- SIDEBAR / DRAWER PANEL -->
+  <div 
+    id="sidebar-panel" 
+    class="fixed bottom-0 right-0 w-full sm:w-96 max-h-[85vh] sm:max-h-[80vh] h-auto z-20 glass-panel rounded-t-3xl sm:rounded-2xl sm:bottom-20 sm:right-6 shadow-2xl transition-all duration-300 transform translate-y-full sm:translate-y-0 opacity-0 pointer-events-none flex flex-col overflow-hidden"
+  >
+    <!-- SIDEBAR HEADER -->
+    <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+      <div class="flex items-center gap-2.5">
+        <div class="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20">
+          <i data-lucide="map-pinned" class="w-5 h-5 text-rose-400"></i>
+        </div>
+        <div>
+          <h2 class="font-display font-bold text-sm text-white flex items-center gap-2">
+            Ciudades Añadidas
+            <span id="city-count-badge" class="px-2 py-0.5 text-xs bg-rose-500/20 text-rose-300 font-extrabold rounded-full border border-rose-500/30">
+              0
+            </span>
+          </h2>
+          <p class="text-xs text-slate-400">Registro en orden cronológico</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button 
+          onclick="clearAllCities()" 
+          id="clear-all-btn"
+          title="Eliminar todas las ciudades marcadas"
+          class="hidden px-2.5 py-1.5 text-xs text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-600 rounded-xl border border-rose-500/20 transition-all flex items-center gap-1 font-semibold"
+        >
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>Limpiar</span>
+        </button>
+        <button onclick="toggleSidebar()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-all">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- CITY LIST CONTAINER -->
+    <div id="city-list" class="p-3 overflow-y-auto flex-1 flex flex-col gap-2 min-h-[160px] max-h-[50vh]">
+      <!-- Empty State -->
+      <div id="empty-state" class="py-12 px-4 text-center flex flex-col items-center justify-center gap-3 text-slate-400">
+        <div class="w-12 h-12 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-500 border border-slate-700/50">
+          <i data-lucide="navigation-off" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-sm text-slate-300">No hay marcas todavía</p>
+          <p class="text-xs text-slate-500 mt-1 max-w-[240px]">Escribe el nombre de cualquier municipio de España en el buscador superior.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR FOOTER -->
+    <div class="p-3 bg-slate-950/80 border-t border-slate-800/80 text-center text-[11px] text-slate-400 flex items-center justify-between">
+      <span>Powered by Leaflet & Nominatim</span>
+      <span class="text-amber-400 font-semibold">ESPAÑA 🇪🇸</span>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // GLOBAL STATE
+    let map = null;
+    let markersMap = new Map(); // stores cityId -> Leaflet marker
+    let citiesList = []; // Array of city objects { id, name, displayName, province, lat, lon, timestamp }
+    let isSidebarOpen = false;
+
+    // SPAIN PRESET BOUNDS / COORDINATES
+    const BOUNDS = {
+      spain: { center: [40.0, -3.7], zoom: 6 },
+      peninsula: { center: [40.2085, -3.713], zoom: 6 },
+      canarias: { center: [28.2915, -16.6291], zoom: 8 },
+      baleares: { center: [39.6953, 3.0176], zoom: 8 }
+    };
+
+    // INITIALIZATION
+    document.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      loadStoredCities();
+      initLucideIcons();
+      setupEventListeners();
+    });
+
+    function initLucideIcons() {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
+    // INITIALIZE LEAFLET MAP
+    function initMap() {
+      // Center map on Spain
+      map = L.map('map', {
+        zoomControl: false,
+        attributionControl: false
+      }).setView(BOUNDS.spain.center, BOUNDS.spain.zoom);
+
+      // Add Zoom Control to bottom-right
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+      // OpenStreetMap tiles with custom style or standard OSM
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        subdomains: ['a', 'b', 'c'],
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      // Custom Attribution control styling
+      L.control.attribution({ position: 'bottomleft' }).addTo(map);
+    }
+
+    // SETUP EVENT LISTENERS
+    function setupEventListeners() {
+      const inputEl = document.getElementById('city-input');
+      const clearBtn = document.getElementById('clear-input-btn');
+
+      inputEl.addEventListener('input', (e) => {
+        if (e.target.value.trim().length > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+      });
+    }
+
+    function clearInputField() {
+      const inputEl = document.getElementById('city-input');
+      inputEl.value = '';
+      document.getElementById('clear-input-btn').classList.add('hidden');
+      inputEl.focus();
+    }
+
+    // CHANGE VIEW PRESETS
+    function setViewPreset(presetKey) {
+      const p = BOUNDS[presetKey];
+      if (p && map) {
+        map.flyTo(p.center, p.zoom, { duration: 1.2 });
+        showToast(`Vista ajustada a ${presetKey === 'spain' ? 'España' : presetKey.toUpperCase()}`, 'info');
+      }
+    }
+
+    // QUICK ADD FROM SUGGESTION PILLS
+    function quickAddCity(cityName) {
+      document.getElementById('city-input').value = cityName;
+      document.getElementById('clear-input-btn').classList.remove('hidden');
+      searchAndAddCity(cityName);
+    }
+
+    // HANDLE FORM SEARCH
+    function handleSearch(e) {
+      e.preventDefault();
+      const query = document.getElementById('city-input').value.trim();
+      if (!query) {
+        showToast('Por favor, introduce el nombre de una ciudad o pueblo de España.', 'warning');
+        return;
+      }
+      searchAndAddCity(query);
+    }
+
+    // GEOCODING WITH NOMINATIM API (Restricted to Spain)
+    async function searchAndAddCity(queryName) {
+      setLoadingState(true);
+
+      try {
+        const encodedQuery = encodeURIComponent(queryName);
+        // Nominatim query with countrycodes=es restriction
+        const apiUrl = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=es&addressdetails=1&limit=1&q=${encodedQuery}`;
+
+        const response = await fetch(apiUrl, {
+          headers: {
+            'Accept-Language': 'es'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Error de red al consultar Nominatim API');
+        }
+
+        const results = await response.json();
+
+        if (!results || results.length === 0) {
+          showToast(`No se encontró ninguna localidad en España con el nombre "${queryName}".`, 'error');
+          setLoadingState(false);
+          return;
+        }
+
+        const location = results[0];
+        const lat = parseFloat(location.lat);
+        const lon = parseFloat(location.lon);
+
+        // Format clean city name & province
+        const address = location.address || {};
+        const cityName = location.name || address.city || address.town || address.village || queryName;
+        const province = address.province || address.state || address.county || 'España';
+        const displayName = location.display_name;
+
+        // Check if city already exists near coordinates (or same lat/lon)
+        const duplicate = citiesList.find(c => Math.abs(c.lat - lat) < 0.01 && Math.abs(c.lon - lon) < 0.01);
+        if (duplicate) {
+          showToast(`"${cityName}" ya está en el mapa. Centrando ubicación...`, 'warning');
+          focusCityOnMap(duplicate.id);
+          setLoadingState(false);
+          return;
+        }
+
+        // Create new city object
+        const cityObj = {
+          id: 'city_' + Date.now(),
+          name: cityName,
+          province: province,
+          displayName: displayName,
+          lat: lat,
+          lon: lon,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        // Add to state list & map
+        citiesList.push(cityObj);
+        saveStoredCities();
+
+        addMarkerToMap(cityObj, true);
+        renderSidebar();
+
+        // Smooth flyTo new coordinates
+        map.flyTo([lat, lon], 12, {
+          animate: true,
+          duration: 1.5,
+          easeLinearity: 0.25
+        });
+
+        showToast(`¡"${cityName}" añadida con éxito al mapa!`, 'success');
+        clearInputField();
+
+      } catch (err) {
+        console.error('Error fetching city:', err);
+        showToast('Fallo de conexión o consulta de geolocalización. Inténtalo de nuevo.', 'error');
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    // CUSTOM MARKER GENERATOR
+    function createCustomMarkerIcon() {
+      return L.divIcon({
+        className: 'custom-marker-wrapper',
+        html: `
+          <div class="custom-marker-bounce relative group cursor-pointer flex flex-col items-center">
+            <div class="pin-pulse w-9 h-9 rounded-full bg-gradient-to-tr from-rose-600 via-rose-500 to-amber-500 text-white flex items-center justify-center shadow-2xl border-2 border-white ring-4 ring-rose-500/30 transform transition-transform group-hover:scale-125">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <div class="w-4 h-1.5 bg-black/60 rounded-full blur-[2px] mt-0.5"></div>
+          </div>
+        `,
+        iconSize: [36, 42],
+        iconAnchor: [18, 40],
+        popupAnchor: [0, -38]
+      });
+    }
+
+    // ADD MARKER TO LEAFLET MAP
+    function addMarkerToMap(cityObj, openPopup = false) {
+      const markerIcon = createCustomMarkerIcon();
+      const marker = L.marker([cityObj.lat, cityObj.lon], { icon: markerIcon }).addTo(map);
+
+      // Create Custom Popup Content
+      const popupHTML = `
+        <div class="p-4 w-64">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div>
+              <span class="px-2 py-0.5 text-[10px] font-extrabold uppercase bg-rose-500/20 text-rose-300 rounded-md border border-rose-500/30">
+                ${escapeHTML(cityObj.province)}
+              </span>
+              <h3 class="font-display font-bold text-base text-white mt-1 leading-tight">
+                ${escapeHTML(cityObj.name)}
+              </h3>
+            </div>
+          </div>
+          
+          <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-800 text-xs font-mono text-slate-300 mb-3 space-y-0.5">
+            <div class="flex justify-between">
+              <span class="text-slate-500">Latitud:</span>
+              <span class="text-amber-400 font-bold">${cityObj.lat.toFixed(4)}° N</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Longitud:</span>
+              <span class="text-amber-400 font-bold">${cityObj.lon.toFixed(4)}° W</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button 
+              onclick="flyToCoords(${cityObj.lat}, ${cityObj.lon})"
+              class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded-lg border border-slate-700 transition-all flex items-center justify-center gap-1"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+              Centrar
+            </button>
+            <button 
+              onclick="deleteCity('${cityObj.id}')"
+              class="bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white p-1.5 rounded-lg border border-rose-500/20 transition-all"
+              title="Eliminar ciudad"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHTML);
+      markersMap.set(cityObj.id, marker);
+
+      if (openPopup) {
+        setTimeout(() => marker.openPopup(), 1000);
+      }
+    }
+
+    // FOCUS CITY ON MAP
+    function focusCityOnMap(cityId) {
+      const city = citiesList.find(c => c.id === cityId);
+      if (!city) return;
+
+      map.flyTo([city.lat, city.lon], 13, { duration: 1.2 });
+      const marker = markersMap.get(cityId);
+      if (marker) {
+        setTimeout(() => marker.openPopup(), 600);
+      }
+    }
+
+    function flyToCoords(lat, lon) {
+      map.flyTo([lat, lon], 14, { duration: 1.2 });
+    }
+
+    // DELETE INDIVIDUAL CITY
+    function deleteCity(cityId) {
+      const index = citiesList.findIndex(c => c.id === cityId);
+      if (index !== -1) {
+        const cityName = citiesList[index].name;
+        citiesList.splice(index, 1);
+        saveStoredCities();
+
+        // Remove Leaflet marker
+        const marker = markersMap.get(cityId);
+        if (marker) {
+          map.removeLayer(marker);
+          markersMap.delete(cityId);
+        }
+
+        renderSidebar();
+        showToast(`"${cityName}" eliminada del mapa.`, 'info');
+      }
+    }
+
+    // CLEAR ALL CITIES
+    function clearAllCities() {
+      if (citiesList.length === 0) return;
+
+      if (confirm('¿Estás seguro de que quieres eliminar todos los marcadores del mapa?')) {
+        // Remove markers from map
+        markersMap.forEach(marker => map.removeLayer(marker));
+        markersMap.clear();
+        citiesList = [];
+        saveStoredCities();
+
+        renderSidebar();
+        map.flyTo(BOUNDS.spain.center, BOUNDS.spain.zoom, { duration: 1.2 });
+        showToast('Se han eliminado todos los marcadores.', 'info');
+      }
+    }
+
+    // RENDER SIDEBAR LIST
+    function renderSidebar() {
+      const listEl = document.getElementById('city-list');
+      const badgeEl = document.getElementById('city-count-badge');
+      const badgeFloating = document.getElementById('badge-count-floating');
+      const clearAllBtn = document.getElementById('clear-all-btn');
+
+      const count = citiesList.length;
+      badgeEl.textContent = count;
+      badgeFloating.textContent = count;
+
+      if (count > 0) {
+        clearAllBtn.classList.remove('hidden');
+      } else {
+        clearAllBtn.classList.add('hidden');
+      }
+
+      if (count === 0) {
+        listEl.innerHTML = `
+          <div id="empty-state" class="py-12 px-4 text-center flex flex-col items-center justify-center gap-3 text-slate-400">
+            <div class="w-12 h-12 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-500 border border-slate-700/50">
+              <i data-lucide="navigation-off" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="font-semibold text-sm text-slate-300">No hay marcas todavía</p>
+              <p class="text-xs text-slate-500 mt-1 max-w-[240px]">Escribe el nombre de cualquier municipio de España en el buscador superior.</p>
+            </div>
+          </div>
+        `;
+        initLucideIcons();
+        return;
+      }
+
+      // Render items in reverse order (newest first)
+      listEl.innerHTML = citiesList.slice().reverse().map(city => `
+        <div class="group bg-slate-900/80 hover:bg-slate-800/90 p-3 rounded-xl border border-slate-800 hover:border-slate-700 transition-all flex items-center justify-between gap-3">
+          <button 
+            onclick="focusCityOnMap('${city.id}')"
+            class="flex-1 text-left flex items-start gap-2.5 overflow-hidden"
+          >
+            <div class="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 group-hover:scale-110 transition-transform">
+              <i data-lucide="map-pin" class="w-4 h-4"></i>
+            </div>
+            <div class="overflow-hidden">
+              <h4 class="font-bold text-sm text-slate-200 truncate group-hover:text-rose-300 transition-colors">
+                ${escapeHTML(city.name)}
+              </h4>
+              <p class="text-xs text-slate-400 truncate">${escapeHTML(city.province)}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-[10px] font-mono text-amber-400/90 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                  ${city.lat.toFixed(3)}°, ${city.lon.toFixed(3)}°
+                </span>
+                <span class="text-[10px] text-slate-500">${city.timestamp}</span>
+              </div>
+            </div>
+          </button>
+
+          <button 
+            onclick="deleteCity('${city.id}')"
+            class="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+            title="Eliminar de la lista"
+          >
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      `).join('');
+
+      initLucideIcons();
+    }
+
+    // TOGGLE SIDEBAR VISIBILITY
+    function toggleSidebar() {
+      const panel = document.getElementById('sidebar-panel');
+      const icon = document.getElementById('sidebar-toggle-icon');
+
+      isSidebarOpen = !isSidebarOpen;
+
+      if (isSidebarOpen) {
+        panel.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+        panel.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        icon.classList.add('rotate-180');
+      } else {
+        panel.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
+        panel.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    // UI LOADING STATE TOGGLE
+    function setLoadingState(isLoading) {
+      const btnText = document.getElementById('btn-text');
+      const btnSpinner = document.getElementById('btn-spinner');
+      const submitBtn = document.getElementById('submit-btn');
+      const inputEl = document.getElementById('city-input');
+
+      if (isLoading) {
+        btnText.classList.add('hidden');
+        btnSpinner.classList.remove('hidden');
+        submitBtn.disabled = true;
+        inputEl.disabled = true;
+      } else {
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+        submitBtn.disabled = false;
+        inputEl.disabled = false;
+      }
+    }
+
+    // TOAST NOTIFICATIONS SYSTEM
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+
+      const toast = document.createElement('div');
+      toast.className = `toast-enter glass-panel p-3.5 rounded-xl shadow-2xl pointer-events-auto flex items-center justify-between gap-3 border ${
+        type === 'error' ? 'border-rose-500/40 bg-rose-950/80 text-rose-200' :
+        type === 'warning' ? 'border-amber-500/40 bg-amber-950/80 text-amber-200' :
+        type === 'success' ? 'border-emerald-500/40 bg-emerald-950/80 text-emerald-200' :
+        'border-slate-700 bg-slate-900/90 text-slate-200'
+      }`;
+
+      let iconName = type === 'error' ? 'alert-circle' : type === 'warning' ? 'alert-triangle' : type === 'success' ? 'check-circle-2' : 'info';
+
+      toast.innerHTML = `
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="${iconName}" class="w-5 h-5 shrink-0"></i>
+          <span class="text-xs font-semibold leading-snug">${escapeHTML(message)}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      `;
+
+      container.appendChild(toast);
+      initLucideIcons();
+
+      // Auto dismiss after 4.5s
+      setTimeout(() => {
+        if (toast.parentElement) {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(-10px)';
+          toast.style.transition = 'all 0.3s ease';
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 4500);
+    }
+
+    // LOCAL STORAGE PERSISTENCE
+    function saveStoredCities() {
+      try {
+        localStorage.setItem('spain_map_cities_v1', JSON.stringify(citiesList));
+      } catch (e) {
+        console.error('Could not save to localStorage:', e);
+      }
+    }
+
+    function loadStoredCities() {
+      try {
+        const stored = localStorage.getItem('spain_map_cities_v1');
+        if (stored) {
+          citiesList = JSON.parse(stored);
+          if (Array.isArray(citiesList)) {
+            citiesList.forEach(cityObj => addMarkerToMap(cityObj, false));
+            renderSidebar();
+          }
+        }
+      } catch (e) {
+        console.error('Error loading stored cities:', e);
+      }
+    }
+
+    // UTILITY: ESCAPE HTML
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, match => {
+        const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        return escapeMap[match];
+      });
+    }
+  </script>
+</body>
+</html>

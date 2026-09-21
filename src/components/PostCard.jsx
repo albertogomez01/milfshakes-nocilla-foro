@@ -89,6 +89,33 @@ export default function PostCard({ post, onVote, onClick, activeProfile, onDelet
         <h2 className="post-title">{post.title}</h2>
         <p className="post-excerpt">{post.content}</p>
 
+        {post.imageUrl && (
+          <div
+            style={{
+              margin: '0.85rem 0',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: '1px solid rgba(229,168,59,0.3)',
+              maxHeight: '320px',
+              background: '#0a0604',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <img
+              src={post.imageUrl}
+              alt={post.title}
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxHeight: '320px',
+                objectFit: 'contain',
+              }}
+            />
+          </div>
+        )}
+
         <div className="post-footer">
           <div className="footer-item">
             <MessageSquare size={16} color="var(--accent-gold)" />

@@ -55,6 +55,32 @@ export default function PostDetailModal({ post, onClose, onAddComment, activePro
             )}
           </div>
 
+          {post.imageUrl && (
+            <div
+              style={{
+                margin: '1rem 0',
+                borderRadius: '14px',
+                overflow: 'hidden',
+                border: '1px solid var(--accent-gold)',
+                background: '#090503',
+                textAlign: 'center',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+              }}
+            >
+              <img
+                src={post.imageUrl}
+                alt={post.title}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '480px',
+                  objectFit: 'contain',
+                  display: 'block',
+                  margin: '0 auto',
+                }}
+              />
+            </div>
+          )}
+
           <div style={{ fontSize: '1.05rem', lineHeight: '1.7', color: 'var(--text-primary)', whiteSpace: 'pre-line', background: 'rgba(0,0,0,0.2)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
             {post.content}
           </div>

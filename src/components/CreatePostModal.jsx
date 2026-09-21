@@ -7,7 +7,20 @@ export default function CreatePostModal({ isOpen, onClose, onCreatePost, activeP
   const [content, setContent] = useState('');
   const [tagsInput, setTagsInput] = useState('');
 
+  const [imageUrl, setImageUrl] = useState('');
+
   if (!isOpen) return null;
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,6 +47,7 @@ export default function CreatePostModal({ isOpen, onClose, onCreatePost, activeP
       authorBadge: activeProfile?.badge || 'Hunter Pro',
       authorColor: activeProfile?.avatarColor || 'var(--accent-gold)',
       content: content.trim(),
+      imageUrl: imageUrl.trim() || null,
       tags: parsedTags.length > 0 ? parsedTags : ['Milfshakes', 'Nocilla'],
       votes: 1,
       userVote: 'up',
@@ -44,6 +58,7 @@ export default function CreatePostModal({ isOpen, onClose, onCreatePost, activeP
     // Reset and close
     setTitle('');
     setContent('');
+    setImageUrl('');
     setTagsInput('');
     onClose();
   };
@@ -103,6 +118,32 @@ export default function CreatePostModal({ isOpen, onClose, onCreatePost, activeP
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
             />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Adjuntar Imagen / Pista (Opcional)</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="URL de imagen o carga un archivo..."
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <label
+                className="btn-secondary"
+                style={{ padding: '0.55rem 0.85rem', cursor: 'pointer', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+              >
+                📁 Subir Imagen
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
           </div>
 
           <div className="form-group">

@@ -13,6 +13,8 @@ import AuthGate from './components/AuthGate';
 import CommunityPoll from './components/CommunityPoll';
 import Footer from './components/Footer';
 import LegalNoticeModal from './components/LegalNoticeModal';
+import SpainMapModal from './components/SpainMapModal';
+import SpainMapSection from './components/SpainMapSection';
 import { Milk, Sparkles, MessageSquare, ShieldCheck, HelpCircle, ShieldAlert } from 'lucide-react';
 
 const INITIAL_PROFILES = [
@@ -43,7 +45,38 @@ const INITIAL_PROFILES = [
   },
 ];
 
-const INITIAL_POSTS = [];
+const OFFICIAL_PISTA_POST = {
+  id: 2002,
+  title: '📌 PISTA OFICIAL #002 — El Secreto de los Vasos (Pajitas, Flores y Nubes)',
+  category: 'teorias',
+  categoryLabel: '🔍 Teorías y Pistas',
+  author: 'albertogomez01',
+  authorBadge: '👑 Admin / Creador',
+  imageUrl: '/pista002.jpg',
+  content: `🔍 EXPEDIENTE DEL CASO — PISTA 002
+
+"Cuenta las pajitas en el vaso verde, las flores en el vaso azul y las nubes en el vaso rojo."
+
+¡Continúa con tu investigación! ¿Te has atascado? Revisa las hipótesis.
+
+---
+💡 Instinto de Detective: Observa minuciosamente las ilustraciones impresas en los 3 vasos de cristal de la colección "El Milfterio del Picasso" (Verde, Azul y Rojo) para extraer la combinación numérica clave.`,
+  tags: ['Pista002', 'VasosPicasso', 'Descifrado', 'Milfshakes'],
+  votes: 128,
+  userVote: 'up',
+  timeAgo: 'Pista Destacada',
+  comments: [
+    {
+      id: 200201,
+      author: 'HunterPro',
+      authorBadge: 'Hunter Pro',
+      text: '¡Brutal! He contado las pajitas en el vaso verde y las flores del azul. Todo encaja con los códigos.',
+      timeAgo: 'Hace 15 min'
+    }
+  ]
+};
+
+const INITIAL_POSTS = [OFFICIAL_PISTA_POST];
 
 export default function App() {
   // Auth Gate State
@@ -70,12 +103,12 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {
         console.error('Error parsing stored posts:', e);
       }
     }
-    return [];
+    return INITIAL_POSTS;
   });
 
 
@@ -88,6 +121,7 @@ export default function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isTwitterAuthModalOpen, setIsTwitterAuthModalOpen] = useState(false);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   // Sync Auth State
   useEffect(() => {
@@ -268,6 +302,7 @@ export default function App() {
         onOpenProfileModal={() => setIsProfileModalOpen(true)}
         onOpenTwitterAuthModal={() => setIsTwitterAuthModalOpen(true)}
         onLogout={handleLogout}
+        onOpenMapModal={() => setIsMapModalOpen(true)}
       />
 
       <main className="app-container">
@@ -328,6 +363,9 @@ export default function App() {
 
         {/* Visual Twitter Viral Share Banner */}
         <TwitterViralBanner />
+
+        {/* Sección Mapa Interactivo de España Integrado Nativamente */}
+        <SpainMapSection />
 
         {/* Layout Grid */}
         <div className="main-layout">
@@ -425,6 +463,11 @@ export default function App() {
       <LegalNoticeModal
         isOpen={isLegalModalOpen}
         onClose={() => setIsLegalModalOpen(false)}
+      />
+
+      <SpainMapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, PlusCircle, Sparkles, CheckCircle2, LogOut, Compass } from 'lucide-react';
+import { Search, PlusCircle, Sparkles, CheckCircle2, LogOut, Compass, MapPin } from 'lucide-react';
 
 export default function Header({
   searchQuery,
@@ -9,6 +9,7 @@ export default function Header({
   onOpenProfileModal,
   onOpenTwitterAuthModal,
   onLogout,
+  onOpenMapModal,
 }) {
   return (
     <header className="site-header">
@@ -39,6 +40,25 @@ export default function Header({
         </div>
 
         <div className="header-actions">
+          {/* Botón Mapa de España */}
+          <button
+            className="btn-secondary"
+            onClick={onOpenMapModal}
+            style={{
+              background: 'rgba(225, 29, 72, 0.15)',
+              borderColor: 'rgba(225, 29, 72, 0.4)',
+              color: '#FF3366',
+              fontWeight: 700,
+              padding: '0.6rem 0.95rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <MapPin size={18} />
+            <span>Mapa España</span>
+          </button>
+
           {/* Botón de inicio de sesión con Twitter / X */}
           {!activeProfile?.isTwitterAuth && (
             <button
