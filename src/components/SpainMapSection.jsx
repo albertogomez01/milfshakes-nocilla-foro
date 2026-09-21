@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   MapPin, Search, PlusCircle, Trash2, X, Sparkles, NavigationOff, 
-  MapPinned, Users, AlertCircle, AlertTriangle, CheckCircle2, Info, Maximize2
+  MapPinned, Users, AlertCircle, AlertTriangle, CheckCircle2, Info, Maximize2, Clock, Cake, Map as MapIcon
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
@@ -14,6 +14,23 @@ const BOUNDS = {
   baleares: { center: [39.6953, 3.0176], zoom: 8 }
 };
 
+// PRESET CITIES SPECIFIED BY THE USER IN EXACT ORDER
+const PRESET_CITIES = [
+  { id: 'c_pontevedra', name: 'Pontevedra', province: 'Galicia', lat: 42.4336, lon: -8.6480, author: 'Investigador', timestamp: '#01' },
+  { id: 'c_toledo', name: 'Toledo', province: 'Castilla-La Mancha', lat: 39.8628, lon: -4.0273, author: 'Investigador', timestamp: '#02' },
+  { id: 'c_cordoba', name: 'Córdoba', province: 'Andalucía', lat: 37.8882, lon: -4.7794, author: 'Investigador', timestamp: '#03' },
+  { id: 'c_teruel', name: 'Teruel', province: 'Aragón', lat: 40.3456, lon: -1.1072, author: 'Investigador', timestamp: '#04' },
+  { id: 'c_palencia', name: 'Palencia', province: 'Castilla y León', lat: 42.0095, lon: -4.5287, author: 'Investigador', timestamp: '#05' },
+  { id: 'c_huelva', name: 'Huelva', province: 'Andalucía', lat: 37.2614, lon: -6.9447, author: 'Investigador', timestamp: '#06' },
+  { id: 'c_jaen', name: 'Jaén', province: 'Andalucía', lat: 37.7796, lon: -3.7849, author: 'Investigador', timestamp: '#07' },
+  { id: 'c_marbella', name: 'Marbella', province: 'Málaga', lat: 36.5101, lon: -4.8824, author: 'Investigador', timestamp: '#08' },
+  { id: 'c_malaga', name: 'Málaga', province: 'Andalucía', lat: 36.7213, lon: -4.4214, author: 'Investigador', timestamp: '#09' },
+  { id: 'c_valencia', name: 'Valencia', province: 'Comunitat Valenciana', lat: 39.4699, lon: -0.3763, author: 'Investigador', timestamp: '#10' },
+  { id: 'c_oviedo', name: 'Oviedo', province: 'Asturias', lat: 43.3619, lon: -5.8494, author: 'Investigador', timestamp: '#11' },
+  { id: 'c_santiago', name: 'Santiago de Compostela', province: 'Galicia', lat: 42.8782, lon: -8.5448, author: 'Investigador', timestamp: '#12' },
+  { id: 'c_guadalajara', name: 'Guadalajara', province: 'Castilla-La Mancha', lat: 40.6327, lon: -3.1669, author: 'Investigador', timestamp: '#13' }
+];
+
 export default function SpainMapSection({ activeProfile }) {
   const mapContainerRef = useRef(null);
   const leafletMapRef = useRef(null);
@@ -21,7 +38,7 @@ export default function SpainMapSection({ activeProfile }) {
 
   const [inputQuery, setInputQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [citiesList, setCitiesList] = useState([]);
+  const [citiesList, setCitiesList] = useState(PRESET_CITIES);
   const [isMapReady, setIsMapReady] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -51,7 +68,6 @@ export default function SpainMapSection({ activeProfile }) {
     const setupMap = () => {
       if (!mapContainerRef.current || !window.L || leafletMapRef.current) return;
 
-      // Prevent Leaflet "Map container is already initialized" error
       if (mapContainerRef.current._leaflet_id) {
         mapContainerRef.current._leaflet_id = null;
       }
@@ -98,7 +114,7 @@ export default function SpainMapSection({ activeProfile }) {
     };
   }, []);
 
-  // 2. Real-time Firestore Sync for Cities
+  // 2. Real-time Firestore Sync combined with Preset Cities
   useEffect(() => {
     let unsubscribe = () => {};
 
@@ -106,11 +122,11 @@ export default function SpainMapSection({ activeProfile }) {
       const citiesRef = collection(db, 'spain_cities');
 
       unsubscribe = onSnapshot(citiesRef, (snapshot) => {
-        const fetched = [];
+        const remoteCities = [];
         snapshot.forEach(docSnap => {
           const data = docSnap.data();
           if (data && data.name && data.lat && data.lon) {
-            fetched.push({
+            remoteCities.push({
               id: docSnap.id,
               name: data.name,
               province: data.province || 'España',
@@ -122,28 +138,24 @@ export default function SpainMapSection({ activeProfile }) {
           }
         });
 
-        setCitiesList(fetched);
+        // Merge Preset Cities with Remote Cities without duplicates
+        const combined = [...PRESET_CITIES];
+        remoteCities.forEach(rc => {
+          if (!combined.some(pc => pc.name.toLowerCase() === rc.name.toLowerCase() || (Math.abs(pc.lat - rc.lat) < 0.01 && Math.abs(pc.lon - rc.lon) < 0.01))) {
+            combined.push(rc);
+          }
+        });
+
+        setCitiesList(combined);
       }, (error) => {
-        console.warn('Firestore onSnapshot error, falling back to local storage:', error.message);
-        fallbackLocalStorage();
+        console.warn('Firestore onSnapshot fallback:', error.message);
       });
     } catch (e) {
-      console.warn('Firestore setup error, using local storage:', e);
-      fallbackLocalStorage();
+      console.warn('Firestore setup error:', e);
     }
 
     return () => unsubscribe();
   }, []);
-
-  const fallbackLocalStorage = () => {
-    try {
-      const saved = localStorage.getItem('spain_map_cities_v1');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setCitiesList(parsed);
-      }
-    } catch (e) {}
-  };
 
   // 3. Sync Markers to Leaflet Map whenever citiesList or isMapReady changes
   useEffect(() => {
@@ -498,7 +510,7 @@ export default function SpainMapSection({ activeProfile }) {
           <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
             <Sparkles size={11} color="#f59e0b" /> Sugerencias:
           </span>
-          {['Madrid', 'Barcelona', 'Sevilla', 'Valencia', 'Bilbao', 'Las Palmas de Gran Canaria'].map(name => (
+          {['Pontevedra', 'Toledo', 'Córdoba', 'Teruel', 'Palencia', 'Huelva', 'Jaén', 'Marbella', 'Málaga', 'Valencia', 'Oviedo', 'Santiago', 'Guadalajara'].map(name => (
             <button
               key={name}
               onClick={() => setInputQuery(name)}
@@ -547,23 +559,24 @@ export default function SpainMapSection({ activeProfile }) {
       )}
 
       {/* MAP & LIST FLEX GRID */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', minHeight: '440px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', minHeight: '520px' }}>
         {/* Leaflet DOM element */}
         <div 
           ref={mapContainerRef} 
-          style={{ flex: '1 1 340px', minHeight: '440px', zIndex: 1, backgroundColor: '#0b0f19' }} 
+          style={{ flex: '1 1 340px', minHeight: '520px', zIndex: 1, backgroundColor: '#0b0f19' }} 
         />
 
         {/* SIDEBAR PANEL */}
         <div style={{
-          width: '280px',
+          width: '320px',
           flexShrink: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.95)',
           borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
           display: 'flex',
           flexDirection: 'column',
-          maxHeight: '440px',
+          maxHeight: '520px',
         }}>
+          {/* Header */}
           <div style={{
             padding: '10px 14px',
             borderBottom: '1px solid rgba(255,255,255,0.08)',
@@ -575,20 +588,49 @@ export default function SpainMapSection({ activeProfile }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <MapPinned size={16} color="#f43f5e" />
               <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff' }}>
-                Ciudades ({citiesList.length})
+                Localizaciones ({citiesList.length})
               </span>
             </div>
           </div>
 
-          <div style={{ padding: '8px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {/* BANNER REQUERIDO: "ME FALTAN EL MAPA, LA TARTA Y EL TIEMPO" */}
+          <div style={{
+            margin: '8px 10px 4px 10px',
+            padding: '10px 12px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(225, 29, 72, 0.15))',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+              <AlertTriangle size={14} color="#f59e0b" />
+              <span>OBJETOS PENDIENTES DEL CASO</span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.75rem', color: '#f1f5f9', lineHeight: 1.3, fontWeight: 700 }}>
+              "Me faltan <strong>el mapa 🗺️</strong>, <strong>la tarta 🎂</strong> y <strong>el tiempo ⏳</strong>"
+            </p>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '0.7rem', color: '#cbd5e1' }}>
+              <span style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <MapIcon size={12} color="#f59e0b" /> El Mapa
+              </span>
+              <span style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Cake size={12} color="#f43f5e" /> La Tarta
+              </span>
+              <span style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Clock size={12} color="#60a5fa" /> El Tiempo
+              </span>
+            </div>
+          </div>
+
+          {/* Cities List in exact specified order */}
+          <div style={{ padding: '8px 10px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {citiesList.length === 0 ? (
               <div style={{ padding: '24px 12px', textAlign: 'center', color: '#94a3b8' }}>
                 <NavigationOff size={28} style={{ marginBottom: '6px', opacity: 0.5 }} />
                 <p style={{ fontSize: '0.78rem', margin: 0, fontWeight: 600 }}>Sin ciudades aún</p>
-                <p style={{ fontSize: '0.7rem', margin: '3px 0 0 0', opacity: 0.7 }}>Añade la primera arriba para compartirla con la comunidad.</p>
               </div>
             ) : (
-              citiesList.slice().reverse().map(city => (
+              citiesList.map((city, idx) => (
                 <div
                   key={city.id}
                   style={{
@@ -613,12 +655,17 @@ export default function SpainMapSection({ activeProfile }) {
                       padding: 0,
                     }}
                   >
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f8fafc', lineHeight: 1.2 }}>
-                      {city.name}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.15)', padding: '1px 5px', borderRadius: '4px' }}>
+                        #{idx + 1}
+                      </span>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc', lineHeight: 1.2 }}>
+                        {city.name}
+                      </span>
                     </div>
                     <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '2px', display: 'flex', gap: '4px' }}>
                       <span>{city.province}</span>
-                      <span style={{ color: '#f59e0b' }}>• {city.author}</span>
+                      <span style={{ color: '#f59e0b' }}>• {city.lat.toFixed(2)}°, {city.lon.toFixed(2)}°</span>
                     </div>
                   </button>
 
