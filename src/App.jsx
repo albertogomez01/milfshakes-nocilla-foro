@@ -10,7 +10,9 @@ import TwitterViralBanner from './components/TwitterViralBanner';
 import CodeVaultWidget from './components/CodeVaultWidget';
 import AuthGate from './components/AuthGate';
 import CommunityPoll from './components/CommunityPoll';
-import { Milk, Sparkles, MessageSquare, ShieldCheck, HelpCircle } from 'lucide-react';
+import Footer from './components/Footer';
+import LegalNoticeModal from './components/LegalNoticeModal';
+import { Milk, Sparkles, MessageSquare, ShieldCheck, HelpCircle, Compass } from 'lucide-react';
 
 const INITIAL_PROFILES = [
   {
@@ -43,63 +45,63 @@ const INITIAL_PROFILES = [
 const INITIAL_POSTS = [
   {
     id: 1,
-    title: '🍫 Análisis del bundle JS: ¿Alguien ha revisado las variables ocultas en window?',
+    title: '🖼️ Análisis del expediente: ¿Qué esconde la fotografía del cuadro Picasso?',
     category: 'teorias',
     categoryLabel: '🔍 Teorías y Pistas',
     author: 'NocillaMaster',
     authorBadge: 'Nocilla Mod',
-    content: 'Revisando las entrañas de la aplicación retro, me encontré con un fragmento de código muy interesante que realiza sustituciones de caracteres antes de validar. ¿Creéis que la combinación de Milfshakes + Nocilla abre la tercera carpeta secreta?',
-    tags: ['IngenieriaInversa', 'Pista3', 'Desofuscacion'],
-    votes: 42,
+    content: 'Revisando los documentos y fotografías en el terminal de archivos de El Milfterio del Picasso, he encontrado una anotación al reverso del lienzo. ¿Creéis que la combinación de los tres vasos desbloquea la carpeta final?',
+    tags: ['CasoPicasso', 'Investigacion', 'Fotografias'],
+    votes: 56,
     userVote: null,
     timeAgo: 'Hace 2 horas',
     comments: [
-      { id: 101, author: 'ChocoHacker', authorBadge: 'Investigador', text: '¡Totalmente! Si revisas la cadena en Base64 verás un prefijo que coincide con los ingredientes principales.', timeAgo: 'Hace 1 hora' },
-      { id: 102, author: 'CreamHunter', authorBadge: 'Buscador de Pistas', text: 'Confirmo. En el archivo index de assets hay una función de comprobación de hashes.', timeAgo: 'Hace 30 min' },
+      { id: 101, author: 'ChocoHacker', authorBadge: 'Investigador', text: '¡Totalmente! Si revisas el archivo de la carpeta de codificación, verás que los números coinciden.', timeAgo: 'Hace 1 hora' },
+      { id: 102, author: 'CreamHunter', authorBadge: 'Buscador de Pistas', text: 'Confirmo. En el archivo del teléfono hay una pista de audio clave.', timeAgo: 'Hace 30 min' },
     ],
   },
   {
     id: 2,
-    title: '⚡ Guía completa de soluciones para el Nivel 1 y Nivel 2 del Reto',
+    title: '⚡ Guía de acceso a las carpetas bloqueadas del terminal del caso',
     category: 'guias',
     categoryLabel: '⚡ Guías & Soluciones',
     author: 'RetroSolver',
     authorBadge: 'Descifrador',
-    content: 'Aquí tenéis el paso a paso recopilado por la comunidad para desbloquear los primeros accesos:\n1. Inspecciona los atributos data-code del contenedor principal.\n2. La clave por defecto del primer archivo se obtiene ordenando los nombres de los sabores.\n3. Guarda las credenciales en tu localStorage para mantener el progreso.',
-    tags: ['Guia', 'Nivel1', 'Solucionario'],
-    votes: 89,
+    content: 'Paso a paso para revisar las pruebas del expediente:\n1. Revisa los informes de texto e inspecciona las pistas de las grabaciones.\n2. La carpeta de localizaciones contiene el mapa clave.\n3. Recuerda que para optar al premio oficial de 15.000 € debes conservar tus 3 vasos físicos y el ticket de compra.',
+    tags: ['Guia', 'CasoAbierto', 'BasesOficiales'],
+    votes: 94,
     userVote: 'up',
-    timeAgo: 'Hace 5 horas',
+    timeAgo: 'Hace 4 horas',
     comments: [
-      { id: 103, author: 'MilkyWay', authorBadge: 'Fan Nocilla', text: '¡Impresionante guía! Me salvó en la segunda carpeta.', timeAgo: 'Hace 3 horas' },
+      { id: 103, author: 'MilkyWay', authorBadge: 'Fan Nocilla', text: '¡Excelente resumen! Me sirvió para guiarme en el terminal.', timeAgo: 'Hace 2 horas' },
     ],
   },
   {
     id: 3,
-    title: '🎨 Cuando crees que has encontrado la contraseña pero resulta ser un easter egg de Nocilla',
+    title: '🎨 Cuando encuentras una pista oculta en las grabaciones de audio',
     category: 'memes',
     categoryLabel: '🎨 Memes & FanArt',
     author: 'MemeShake',
     authorBadge: 'Fan Nocilla',
-    content: 'Llevaba 3 horas intentando descifrar un array de charcodes para que al final la alerta me mostrara: "¡Buen intento, pero primero tómate un Milfshakes de Nocilla!" 💀🥤',
-    tags: ['Memes', 'EasterEgg', 'Humor'],
-    votes: 128,
+    content: 'Estuve 20 minutos escuchando en bucle la grabación de audio del caso Picasso pensando que era código morse y resultó ser el sonido de un sorbo de Milfshake 💀🥤',
+    tags: ['Memes', 'Humor', 'Grabaciones'],
+    votes: 142,
     userVote: null,
-    timeAgo: 'Hace 12 horas',
+    timeAgo: 'Hace 10 horas',
     comments: [
-      { id: 104, author: 'NocillaMaster', authorBadge: 'Nocilla Mod', text: 'Jajaja los creadores del reto se lucieron con ese easter egg.', timeAgo: 'Hace 10 horas' },
+      { id: 104, author: 'NocillaMaster', authorBadge: 'Nocilla Mod', text: 'Jajaja los creadores de la campaña se lucieron con ese detalle.', timeAgo: 'Hace 8 horas' },
     ],
   },
   {
     id: 4,
-    title: '💬 ¿Qué opináis de la interfaz estilo escritorio retro del juego?',
+    title: '💬 ¿Qué os parece la interfaz de terminal de archivos de la web del enigma?',
     category: 'general',
     categoryLabel: '💬 General & Debate',
     author: 'VaporSynth',
     authorBadge: 'Investigador',
-    content: 'La estética noventera con la ventana retro, cursores retro y efectos CRT da una nostalgia genial. ¿Alguien ha encontrado más secretos ocultos en el fondo de pantalla o en la papelera simulada?',
-    tags: ['RetroUI', 'Debate', 'Nostalgia'],
-    votes: 31,
+    content: 'La ambientación de caso abierto con documentos, fotografías y reproductor de audio da una sensación genial de investigación policíaca. ¿Alguien ha descifrado ya todas las carpetas?',
+    tags: ['CasoAbierto', 'Debate', 'MisterioPicasso'],
+    votes: 38,
     userVote: null,
     timeAgo: 'Hace 1 día',
     comments: [],
@@ -142,6 +144,7 @@ export default function App() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isTwitterAuthModalOpen, setIsTwitterAuthModalOpen] = useState(false);
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
 
   // Sync Auth State
   useEffect(() => {
@@ -311,9 +314,9 @@ export default function App() {
       <main className="app-container">
         {/* Hero Banner */}
         <section className="hero-banner">
-          <h1 className="hero-title">Comunidad Milfshakes x Nocilla 🥤🍫</h1>
+          <h1 className="hero-title">El Milfterio del Picasso 🔍🖼️</h1>
           <p className="hero-subtitle">
-            El espacio de encuentro oficial para investigadores, gamers y fans. Comparte hipótesis, analiza pistas y ayuda a desbloquear todos los niveles del reto.
+            Caso abierto: Foro de investigación de la comunidad. Analiza los documentos, fotografías y grabaciones para descifrar los secretos del enigma.
           </p>
 
           <div className="stats-grid">
@@ -337,7 +340,7 @@ export default function App() {
               <ShieldCheck size={20} color="#4CAF50" />
               <div>
                 <div className="stat-number">{profiles.length}</div>
-                <div className="stat-label">Perfiles Registrados</div>
+                <div className="stat-label">Detectives Registrados</div>
               </div>
             </div>
           </div>
@@ -389,17 +392,19 @@ export default function App() {
             <div className="widget-card">
               <div className="widget-title">
                 <Milk size={18} color="var(--accent-pink)" />
-                <span>Normas de la Comunidad</span>
+                <span>Normas del Expediente</span>
               </div>
               <ul style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <li>Mantén un trato respetuoso con todos los miembros.</li>
-                <li>Usa la etiqueta de <strong>#Spoilers</strong> al publicar claves directas.</li>
-                <li>Diviértete compartiendo memes y teorías del reto.</li>
+                <li>Usa la etiqueta de <strong>#Spoilers</strong> al publicar soluciones directas.</li>
+                <li>Conserva tus 3 vasos físicos y ticket para poder optar al premio oficial de 15.000 €.</li>
               </ul>
             </div>
           </aside>
         </div>
       </main>
+
+      <Footer onOpenLegalModal={() => setIsLegalModalOpen(true)} />
 
       {/* Modales */}
       <PostDetailModal
@@ -430,6 +435,11 @@ export default function App() {
         isOpen={isTwitterAuthModalOpen}
         onClose={() => setIsTwitterAuthModalOpen(false)}
         onTwitterLoginSuccess={handleTwitterLoginSuccess}
+      />
+
+      <LegalNoticeModal
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
       />
     </div>
   );

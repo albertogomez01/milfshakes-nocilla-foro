@@ -4,10 +4,10 @@ import { BarChart3, CheckCircle2 } from 'lucide-react';
 export default function CommunityPoll() {
   const [votedOption, setVotedOption] = useState(null);
   const [pollData, setPollData] = useState([
-    { id: 1, text: 'La clave está oculta en el código Base64', votes: 142 },
-    { id: 2, text: 'Es un juego de palabras con los ingredientes', votes: 98 },
-    { id: 3, text: 'Hay un archivo secreto en /assets/data', votes: 215 },
-    { id: 4, text: 'Es un hash SHA-256 no invertido', votes: 45 },
+    { id: 1, text: 'La grabación de audio secreta del expediente', votes: 142 },
+    { id: 2, text: 'El reverso de la fotografía del cuadro', votes: 98 },
+    { id: 3, text: 'La carpeta de localizaciones del mapa (11770)', votes: 215 },
+    { id: 4, text: 'El código del teléfono retro (662552)', votes: 110 },
   ]);
 
   const totalVotes = pollData.reduce((acc, curr) => acc + curr.votes, 0);
@@ -28,10 +28,10 @@ export default function CommunityPoll() {
     <div className="widget-card">
       <div className="widget-title">
         <BarChart3 size={20} color="var(--accent-gold)" />
-        <span>Encuesta del Reto</span>
+        <span>Encuesta del Caso Picasso</span>
       </div>
       <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-        ¿Dónde crees que se encuentra la contraseña principal de la carpeta final?
+        ¿Qué prueba o documento crees que esconde la clave final del cuadro Picasso?
       </p>
 
       {pollData.map((opt) => {

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Sparkles, Share2, Check, ExternalLink, MessageCircle } from 'lucide-react';
+import { Sparkles, Share2, Check, ExternalLink } from 'lucide-react';
 
 export default function TwitterViralBanner() {
   const [copied, setCopied] = useState(false);
 
   const forumUrl = 'https://milfshakes-nocilla-foro.vercel.app';
   const tweetText = encodeURIComponent(
-    '¡Analizando todas las pistas y teorías del reto #MilfshakesxNocilla! 🥤🍫 Únete a la comunidad de investigadores aquí: ' +
+    '¡Investigando las pistas de #ElMilfterioDelPicasso! 🔍🖼️ Únete a la comunidad de detectives en: ' +
       forumUrl +
-      ' #RetoNocilla #Desofuscacion'
+      ' #CasoAbierto #MilfshakesxNocilla'
   );
 
   const twitterShareUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
@@ -92,7 +92,7 @@ export default function TwitterViralBanner() {
             ¡Comparte el Foro en X y atrae a más investigadores!
           </h3>
           <p style={{ fontSize: '0.88rem', color: '#A0B0C0', marginTop: '0.2rem' }}>
-            Publica con 1 clic en Twitter para traer a tu comunidad a debatir las pistas del reto.
+            Publica con 1 clic en Twitter para traer a tu comunidad a debatir las pistas del caso Picasso.
           </p>
         </div>
       </div>

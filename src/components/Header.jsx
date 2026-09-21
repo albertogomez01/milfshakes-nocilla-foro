@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, PlusCircle, Milk, Sparkles, CheckCircle2, LogOut } from 'lucide-react';
+import { Search, PlusCircle, Sparkles, CheckCircle2, LogOut, Compass } from 'lucide-react';
 
 export default function Header({
   searchQuery,
@@ -15,12 +15,12 @@ export default function Header({
       <div className="header-inner">
         <a href="#" className="brand-logo">
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Milk size={28} color="#FF3366" />
+            <Compass size={28} color="#FF3366" />
             <Sparkles size={16} color="#E5A83B" style={{ position: 'absolute', top: -4, right: -6 }} />
           </div>
           <div>
-            <span>MILFSHAKES</span>
-            <span style={{ color: 'var(--accent-gold)', marginLeft: '4px' }}>x NOCILLA</span>
+            <span>MILFTERIO</span>
+            <span style={{ color: 'var(--accent-gold)', marginLeft: '4px' }}>DEL PICASSO</span>
           </div>
           <span className="logo-badge">FORO</span>
         </a>
@@ -30,7 +30,7 @@ export default function Header({
           <input
             type="text"
             className="search-input"
-            placeholder="Buscar pistas, contraseñas, teorías o discusiones..."
+            placeholder="Buscar en el terminal: teléfono, codificación, localizaciones..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

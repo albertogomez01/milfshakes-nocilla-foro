@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Unlock, Share2, Copy, Check, Crown, Smartphone, FolderCode, MapPin } from 'lucide-react';
+import { Lock, Unlock, Share2, Copy, Check, Crown, Smartphone, FolderCode, MapPin, AlertTriangle } from 'lucide-react';
 
 const REAL_SECRET_CODES = [
   {
@@ -48,11 +48,10 @@ export default function CodeVaultWidget({ activeProfile }) {
   const progressPercent = isAdmin ? 100 : Math.min(100, Math.round((shareCount / requiredShares) * 100));
 
   const forumUrl = 'https://milfshakes-nocilla-foro.vercel.app';
-  const shareTitle = 'Milfshakes x Nocilla Foro';
-  const shareMessage = '¡Entra en el Foro de Milfshakes x Nocilla para descubrir los códigos del reto! 🥤🍫';
+  const shareTitle = 'El Milfterio del Picasso';
+  const shareMessage = '¡Entra en el Foro de El Milfterio del Picasso para descubrir los códigos del reto! 🥤🍫';
   const shareTextEncoded = encodeURIComponent(shareMessage + ' ' + forumUrl);
 
-  // Native Android & iPhone Web Share API handler
   const handleNativeMobileShare = async () => {
     if (navigator.share) {
       try {
@@ -63,7 +62,6 @@ export default function CodeVaultWidget({ activeProfile }) {
         });
         incrementShare();
       } catch (err) {
-        // Fallback to copy link if user cancelled or unsupported
         handleCopyShareLink();
       }
     } else {
@@ -158,7 +156,7 @@ export default function CodeVaultWidget({ activeProfile }) {
         )}
       </div>
 
-      <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+      <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '0.85rem' }}>
         {isAdmin
           ? '👑 Bienvenido @albertogomez01. Como Administrador tienes acceso directo inmediato a todos los códigos sin necesidad de compartir nada.'
           : isUnlocked
@@ -264,6 +262,27 @@ export default function CodeVaultWidget({ activeProfile }) {
             </div>
           );
         })}
+      </div>
+
+      {/* Legal Requirement Banner */}
+      <div
+        style={{
+          background: 'rgba(0,0,0,0.4)',
+          border: '1px solid rgba(229,168,59,0.2)',
+          borderRadius: '10px',
+          padding: '0.65rem 0.85rem',
+          fontSize: '0.78rem',
+          color: 'var(--text-muted)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '8px',
+          marginBottom: '1rem',
+        }}
+      >
+        <AlertTriangle size={15} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+        <span>
+          <strong>Aviso de Bases (Art. 5.1.c):</strong> Para optar al premio oficial (Picasso de 15.000 €) es obligatorio poseer los 3 vasos coleccionables físicos y el ticket de compra.
+        </span>
       </div>
 
       {/* Share Actions for Mobile Android & iPhone */}
