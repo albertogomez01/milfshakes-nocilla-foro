@@ -12,7 +12,7 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
       id: 'user_' + Date.now(),
       username: quickUsername.trim().replace(/^@/, ''),
       badge: 'Investigador',
-      bio: 'Miembro verificado de la comunidad.',
+      bio: 'Miembro verificado de la comunidad no oficial.',
       avatarColor: '#E5A83B',
       reputation: 20,
     });
@@ -91,14 +91,14 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
           <Milk size={38} color="#FF3366" />
         </div>
 
-        <div className="logo-badge" style={{ marginBottom: '0.75rem', padding: '0.3rem 0.75rem' }}>
-          🔒 ACCESO PRIVADO
+        <div className="logo-badge" style={{ marginBottom: '0.75rem', padding: '0.3rem 0.75rem', background: '#E5A83B', color: '#000', fontWeight: 800 }}>
+          ⚠️ FORO NO OFICIAL DE FANS
         </div>
 
         <h1
           style={{
             fontFamily: 'var(--font-heading)',
-            fontSize: '1.8rem',
+            fontSize: '1.75rem',
             fontWeight: 800,
             marginBottom: '0.5rem',
             background: 'linear-gradient(135deg, #FFF7F0 0%, #E5A83B 100%)',
@@ -106,10 +106,10 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
             WebkitTextFillColor: 'transparent',
           }}
         >
-          Milfshakes x Nocilla
+          El Milfterio del Picasso
         </h1>
-        <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', marginBottom: '1.75rem', lineHeight: '1.5' }}>
-          Inicia sesión para acceder al foro de la comunidad, participar en los debates y consultar las pistas del reto.
+        <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: '1.75rem', lineHeight: '1.5' }}>
+          Inicia sesión para acceder al foro no oficial de la comunidad de fans, participar en los debates y consultar las pistas del caso.
         </p>
 
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
@@ -158,14 +158,14 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
               required
             />
             <button type="submit" className="btn-primary" style={{ justifyContent: 'center', padding: '0.85rem' }}>
-              <span>Entrar al Foro</span>
+              <span>Entrar al Foro No Oficial</span>
               <ArrowRight size={18} />
             </button>
           </form>
         </div>
 
         <div style={{ marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.08)', width: '100%', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          🔒 Conexión cifrada y guardada localmente
+          🔒 Conexión cifrada • Plataforma independiente no oficial
         </div>
       </div>
     </div>

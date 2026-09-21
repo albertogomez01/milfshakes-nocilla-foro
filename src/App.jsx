@@ -12,7 +12,7 @@ import AuthGate from './components/AuthGate';
 import CommunityPoll from './components/CommunityPoll';
 import Footer from './components/Footer';
 import LegalNoticeModal from './components/LegalNoticeModal';
-import { Milk, Sparkles, MessageSquare, ShieldCheck, HelpCircle, Compass } from 'lucide-react';
+import { Milk, Sparkles, MessageSquare, ShieldCheck, HelpCircle, ShieldAlert } from 'lucide-react';
 
 const INITIAL_PROFILES = [
   {
@@ -314,9 +314,30 @@ export default function App() {
       <main className="app-container">
         {/* Hero Banner */}
         <section className="hero-banner">
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(229,168,59,0.2)',
+              border: '1px solid var(--accent-gold)',
+              color: 'var(--accent-gold)',
+              padding: '0.25rem 0.75rem',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              marginBottom: '0.75rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            <ShieldAlert size={14} />
+            <span>FORO NO OFICIAL CREADO POR LA COMUNIDAD DE FANS</span>
+          </div>
+
           <h1 className="hero-title">El Milfterio del Picasso 🔍🖼️</h1>
           <p className="hero-subtitle">
-            Caso abierto: Foro de investigación de la comunidad. Analiza los documentos, fotografías y grabaciones para descifrar los secretos del enigma.
+            Comunidad independiente de investigación. Analiza los documentos, fotografías y grabaciones con el resto de detectives del caso.
           </p>
 
           <div className="stats-grid">

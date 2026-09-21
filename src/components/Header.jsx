@@ -22,7 +22,9 @@ export default function Header({
             <span>MILFTERIO</span>
             <span style={{ color: 'var(--accent-gold)', marginLeft: '4px' }}>DEL PICASSO</span>
           </div>
-          <span className="logo-badge">FORO</span>
+          <span className="logo-badge" style={{ background: 'linear-gradient(135deg, #FF3366, #E5A83B)', color: '#000', fontWeight: 800 }}>
+            FORO NO OFICIAL
+          </span>
         </a>
 
         <div className="search-box">
@@ -30,7 +32,7 @@ export default function Header({
           <input
             type="text"
             className="search-input"
-            placeholder="Buscar en el terminal: teléfono, codificación, localizaciones..."
+            placeholder="Buscar en el terminal del foro no oficial..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
