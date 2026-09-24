@@ -176,8 +176,35 @@ export default function SpainMapSection({ activeProfile }) {
       }
     });
 
-    // Add new markers
-    citiesList.forEach(city => {
+    // Add new markers with Start/End visual badges
+    citiesList.forEach((city, idx) => {
+      const isStart = idx === 0;
+      const isEnd = idx === citiesList.length - 1;
+      const numStr = (idx + 1).toString().padStart(2, '0');
+
+      let badgeBg = 'rgba(15, 23, 42, 0.85)';
+      let badgeColor = '#cbd5e1';
+      let badgeText = `#${numStr}`;
+      let pinBg = 'linear-gradient(135deg, #e11d48, #f59e0b)';
+      let glowColor = 'rgba(225, 29, 72, 0.5)';
+      let innerText = numStr;
+
+      if (isStart) {
+        badgeBg = 'rgba(16, 185, 129, 0.95)';
+        badgeColor = '#ffffff';
+        badgeText = '🟢 INICIO (#01)';
+        pinBg = 'linear-gradient(135deg, #10b981, #059669)';
+        glowColor = 'rgba(16, 185, 129, 0.8)';
+        innerText = '🚀';
+      } else if (isEnd) {
+        badgeBg = 'rgba(225, 29, 72, 0.95)';
+        badgeColor = '#ffffff';
+        badgeText = `🏁 FIN (#${numStr})`;
+        pinBg = 'linear-gradient(135deg, #e11d48, #9333ea)';
+        glowColor = 'rgba(225, 29, 72, 0.8)';
+        innerText = '🏁';
+      }
+
       if (!currentMarkers.has(city.id)) {
         try {
           const icon = window.L.divIcon({
@@ -191,28 +218,41 @@ export default function SpainMapSection({ activeProfile }) {
                 animation: dropBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.25) forwards;
               ">
                 <div style="
+                  background: ${badgeBg};
+                  color: ${badgeColor};
+                  font-size: 10px;
+                  font-weight: 800;
+                  padding: 2px 7px;
+                  border-radius: 10px;
+                  border: 1px solid rgba(255,255,255,0.3);
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+                  white-space: nowrap;
+                  margin-bottom: 2px;
+                ">
+                  ${badgeText}
+                </div>
+                <div style="
                   width: 34px;
                   height: 34px;
                   border-radius: 50%;
-                  background: linear-gradient(135deg, #e11d48, #f59e0b);
+                  background: ${pinBg};
                   color: #ffffff;
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  box-shadow: 0 8px 20px rgba(225, 29, 72, 0.5);
+                  box-shadow: 0 0 15px ${glowColor};
                   border: 2px solid #ffffff;
+                  font-weight: 800;
+                  font-size: 12px;
                 ">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                  </svg>
+                  ${innerText}
                 </div>
                 <div style="width: 14px; height: 5px; background: rgba(0,0,0,0.4); border-radius: 50%; margin-top: 2px; filter: blur(1px);"></div>
               </div>
             `,
-            iconSize: [34, 40],
-            iconAnchor: [17, 38],
-            popupAnchor: [0, -36]
+            iconSize: [80, 60],
+            iconAnchor: [40, 56],
+            popupAnchor: [0, -50]
           });
 
           const marker = window.L.marker([city.lat, city.lon], { icon }).addTo(map);
@@ -220,8 +260,8 @@ export default function SpainMapSection({ activeProfile }) {
           const popupHTML = `
             <div style="padding: 12px; width: 230px; font-family: sans-serif; color: #f8fafc;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                <span style="padding: 2px 7px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(225, 29, 72, 0.2); color: #f43f5e; border-radius: 6px; border: 1px solid rgba(225,29,72,0.3);">
-                  ${escapeHTML(city.province)}
+                <span style="padding: 2px 7px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: ${isStart ? 'rgba(16,185,129,0.2)' : isEnd ? 'rgba(225,29,72,0.2)' : 'rgba(245,158,11,0.2)'}; color: ${isStart ? '#34d399' : isEnd ? '#f43f5e' : '#f59e0b'}; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);">
+                  ${isStart ? 'INICIO DE RUTA' : isEnd ? 'FIN DE RUTA' : escapeHTML(city.province)}
                 </span>
                 <span style="font-size: 10px; color: #f59e0b; font-weight: 700;">
                   👤 ${escapeHTML(city.author || 'Detective')}
@@ -349,6 +389,20 @@ export default function SpainMapSection({ activeProfile }) {
     }
   };
 
+  // Fit Entire Route from Start to End
+  const handleFitRoute = () => {
+    if (leafletMapRef.current && polylineRef.current) {
+      try {
+        leafletMapRef.current.fitBounds(polylineRef.current.getBounds(), { padding: [40, 40] });
+        showToast('📍 Encuadrando la ruta completa (Inicio -> Fin)', 'info');
+      } catch (e) {
+        handlePreset('spain');
+      }
+    } else {
+      handlePreset('spain');
+    }
+  };
+
   // Focus City
   const focusCity = (city) => {
     if (leafletMapRef.current) {
@@ -449,6 +503,9 @@ export default function SpainMapSection({ activeProfile }) {
 
         {/* View Presets */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(15, 23, 42, 0.8)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <button onClick={handleFitRoute} style={{ padding: '5px 10px', fontSize: '0.72rem', fontWeight: 800, borderRadius: '6px', border: '1px solid rgba(245,158,11,0.4)', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            🛣️ Ver Ruta
+          </button>
           <button onClick={() => handlePreset('spain')} style={{ padding: '5px 10px', fontSize: '0.72rem', fontWeight: 700, borderRadius: '6px', border: 'none', background: 'transparent', color: '#cbd5e1', cursor: 'pointer' }}>
             🇪🇸 Todo
           </button>
