@@ -1,21 +1,28 @@
 import React, { useState } from 'react';
-import { Milk, Sparkles, Shield, User, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { KeyRound, Lock, ArrowRight, AlertCircle, ShieldAlert, Sparkles, CheckCircle2 } from 'lucide-react';
 
-export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProfileModal }) {
-  const [quickUsername, setQuickUsername] = useState('');
+export default function AuthGate({ onLoginSuccess }) {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [showHint, setShowHint] = useState(false);
 
-  const handleQuickLogin = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!quickUsername.trim()) return;
+    const cleanPassword = password.trim().toLowerCase();
 
-    onLoginSuccess({
-      id: 'user_' + Date.now(),
-      username: quickUsername.trim().replace(/^@/, ''),
-      badge: 'Investigador',
-      bio: 'Miembro verificado de la comunidad no oficial.',
-      avatarColor: '#E5A83B',
-      reputation: 20,
-    });
+    if (cleanPassword === 'herrete') {
+      setError('');
+      onLoginSuccess({
+        id: 'user_herrete_' + Date.now(),
+        username: 'Agente_Herrete',
+        badge: '👟 Agente Perry',
+        bio: 'Acceso concedido mediante la clave secreta del herrete.',
+        avatarColor: '#3B82F6',
+        reputation: 100,
+      });
+    } else {
+      setError('Contraseña incorrecta. ¡Revisa la pista si estás atascado!');
+    }
   };
 
   return (
@@ -26,12 +33,12 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem 1.5rem',
-        background: 'radial-gradient(circle at 50% 30%, #2A170E 0%, #0D0805 70%)',
+        background: 'radial-gradient(circle at 50% 30%, #1A2338 0%, #0A0E1A 70%)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Background Decorative Elements */}
+      {/* Background Decorative Glows */}
       <div
         style={{
           position: 'absolute',
@@ -39,7 +46,7 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
           left: '-10%',
           width: '500px',
           height: '500px',
-          background: 'radial-gradient(circle, rgba(229,168,59,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(59,130,246,0.2) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />
@@ -50,7 +57,7 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
           right: '-10%',
           width: '500px',
           height: '500px',
-          background: 'radial-gradient(circle, rgba(255,51,102,0.1) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(229,168,59,0.15) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />
@@ -59,12 +66,12 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
         style={{
           width: '100%',
           maxWidth: '480px',
-          background: 'rgba(23, 15, 10, 0.85)',
-          border: '1px solid var(--border-card-hover)',
+          background: 'rgba(15, 23, 42, 0.9)',
+          border: '1px solid rgba(59, 130, 246, 0.3)',
           borderRadius: '24px',
-          padding: '2.5rem 2rem',
+          padding: '2.25rem 2rem',
           backdropFilter: 'blur(20px)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(59, 130, 246, 0.15)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -73,101 +80,189 @@ export default function AuthGate({ onLoginSuccess, onOpenTwitterAuth, onOpenProf
           zIndex: 10,
         }}
       >
-        {/* Brand Icon */}
+        {/* Main Feature Image: Zapatillas de cordón y Ornitorrinco Azul */}
         <div
           style={{
-            width: '72px',
-            height: '72px',
-            borderRadius: '20px',
-            background: 'linear-gradient(135deg, rgba(255,51,102,0.2), rgba(229,168,59,0.2))',
-            border: '1px solid var(--accent-gold)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            position: 'relative',
+            width: '100%',
+            maxWidth: '340px',
+            borderRadius: '18px',
+            overflow: 'hidden',
             marginBottom: '1.25rem',
-            boxShadow: '0 0 25px rgba(229,168,59,0.25)',
+            border: '2px solid rgba(59, 130, 246, 0.4)',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.25)',
+            background: '#0B1120',
           }}
         >
-          <Milk size={38} color="#FF3366" />
+          <img
+            src="/herrete_ornitorrinco.jpg"
+            alt="Zapatillas de cordón y ornitorrinco azul"
+            style={{
+              width: '100%',
+              height: 'auto',
+              display: 'block',
+              objectFit: 'cover',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: 'linear-gradient(to top, rgba(11, 17, 32, 0.95), transparent)',
+              padding: '0.6rem 0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            <Sparkles size={14} color="#3B82F6" />
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#93C5FD', letterSpacing: '0.5px' }}>
+              ZAPATILLAS DE CORDÓN & ORNITORRINCO AZUL 🦆👟
+            </span>
+          </div>
         </div>
 
-        <div className="logo-badge" style={{ marginBottom: '0.75rem', padding: '0.3rem 0.75rem', background: '#E5A83B', color: '#000', fontWeight: 800 }}>
-          ⚠️ FORO NO OFICIAL DE FANS
+        <div className="logo-badge" style={{ marginBottom: '0.75rem', padding: '0.35rem 0.85rem', background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', color: '#FFF', fontWeight: 800, fontSize: '0.75rem', borderRadius: '20px' }}>
+          🔒 ACCESO PROTEGIDO CON CONTRASEÑA
         </div>
 
         <h1
           style={{
             fontFamily: 'var(--font-heading)',
-            fontSize: '1.75rem',
+            fontSize: '1.65rem',
             fontWeight: 800,
-            marginBottom: '0.5rem',
-            background: 'linear-gradient(135deg, #FFF7F0 0%, #E5A83B 100%)',
+            marginBottom: '0.4rem',
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #93C5FD 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}
         >
-          El Milfterio del Picasso
+          Acceso al Foro No Oficial
         </h1>
-        <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: '1.75rem', lineHeight: '1.5' }}>
-          Inicia sesión para acceder al foro no oficial de la comunidad de fans, participar en los debates y consultar las pistas del caso.
+        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+          Para ingresar al sitio web, introduce la contraseña requerida.
         </p>
 
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          {/* Twitter / X Login Button */}
-          <button
-            onClick={onOpenTwitterAuth}
-            style={{
-              width: '100%',
-              background: '#0F1419',
-              border: '1px solid #1DA1F2',
-              color: '#FFF',
-              fontWeight: 700,
-              borderRadius: '12px',
-              padding: '0.85rem 1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              fontSize: '0.95rem',
-              transition: 'all 0.25s ease',
-              boxShadow: '0 4px 15px rgba(29,161,242,0.2)',
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1DA1F2">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-            <span>Iniciar Sesión con X (Twitter)</span>
-          </button>
-
-          {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '0.5rem 0', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
-            <span>O entra con tu Nick</span>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+        {/* Password Form */}
+        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ position: 'relative', width: '100%' }}>
+            <KeyRound
+              size={18}
+              style={{
+                position: 'absolute',
+                left: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'rgba(147, 197, 253, 0.7)',
+              }}
+            />
+            <input
+              type="password"
+              placeholder="Introduce la contraseña..."
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) setError('');
+              }}
+              style={{
+                width: '100%',
+                padding: '0.85rem 1rem 0.85rem 2.6rem',
+                borderRadius: '12px',
+                background: 'rgba(11, 17, 32, 0.8)',
+                border: error ? '1px solid #EF4444' : '1px solid rgba(59, 130, 246, 0.3)',
+                color: '#FFF',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'all 0.2s ease',
+                boxSizing: 'border-box',
+              }}
+              required
+              autoFocus
+            />
           </div>
 
-          {/* Quick Nick Login */}
-          <form onSubmit={handleQuickLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Introduce tu nick o usuario..."
-              value={quickUsername}
-              onChange={(e) => setQuickUsername(e.target.value)}
-              required
-            />
-            <button type="submit" className="btn-primary" style={{ justifyContent: 'center', padding: '0.85rem' }}>
-              <span>Entrar al Foro No Oficial</span>
-              <ArrowRight size={18} />
-            </button>
-          </form>
+          {error && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '0.65rem 0.85rem',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                borderRadius: '10px',
+                color: '#FCA5A5',
+                fontSize: '0.82rem',
+                textAlign: 'left',
+              }}
+            >
+              <AlertCircle size={16} style={{ shrink: 0 }} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="btn-primary"
+            style={{
+              justifyContent: 'center',
+              padding: '0.85rem',
+              background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+              borderColor: '#3B82F6',
+              boxShadow: '0 4px 15px rgba(37, 99, 235, 0.4)',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+            }}
+          >
+            <span>Desbloquear y Entrar</span>
+            <ArrowRight size={18} />
+          </button>
+        </form>
+
+        {/* Optional Hint toggle */}
+        <div style={{ marginTop: '1.25rem' }}>
+          <button
+            type="button"
+            onClick={() => setShowHint(!showHint)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#93C5FD',
+              fontSize: '0.8rem',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              opacity: 0.8,
+            }}
+          >
+            {showHint ? 'Ocultar Pista' : '💡 ¿Necesitas una pista?'}
+          </button>
+
+          {showHint && (
+            <div
+              style={{
+                marginTop: '0.6rem',
+                padding: '0.6rem 0.8rem',
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px dashed rgba(59, 130, 246, 0.3)',
+                borderRadius: '10px',
+                fontSize: '0.8rem',
+                color: '#DBEAFE',
+                lineHeight: '1.4',
+              }}
+            >
+              👟 <strong>Pista:</strong> Es el nombre en español del embellecedor de plástico o metal en el extremo de los cordones de las zapatillas (¡la famosa canción de Phineas y Ferb con Perry el ornitorrinco!).
+            </div>
+          )}
         </div>
 
-        <div style={{ marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.08)', width: '100%', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          🔒 Conexión cifrada • Plataforma independiente no oficial
+        <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', width: '100%', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          🔒 Acceso restringido por clave • <strong>herrete</strong>
         </div>
       </div>
     </div>
   );
 }
+
