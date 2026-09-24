@@ -14,21 +14,24 @@ const BOUNDS = {
   baleares: { center: [39.6953, 3.0176], zoom: 8 }
 };
 
-// PRESET CITIES SPECIFIED BY THE USER IN EXACT ORDER
+// PRESET CITIES SPECIFIED BY THE USER IN EXACT ORDER (16 IMÁGENES/LOCALIZACIONES)
 const PRESET_CITIES = [
-  { id: 'c_pontevedra', name: 'Pontevedra', province: 'Galicia', lat: 42.4336, lon: -8.6480, author: 'Investigador', timestamp: '#01' },
-  { id: 'c_toledo', name: 'Toledo', province: 'Castilla-La Mancha', lat: 39.8628, lon: -4.0273, author: 'Investigador', timestamp: '#02' },
-  { id: 'c_cordoba', name: 'Córdoba', province: 'Andalucía', lat: 37.8882, lon: -4.7794, author: 'Investigador', timestamp: '#03' },
-  { id: 'c_teruel', name: 'Teruel', province: 'Aragón', lat: 40.3456, lon: -1.1072, author: 'Investigador', timestamp: '#04' },
-  { id: 'c_palencia', name: 'Palencia', province: 'Castilla y León', lat: 42.0095, lon: -4.5287, author: 'Investigador', timestamp: '#05' },
-  { id: 'c_huelva', name: 'Huelva', province: 'Andalucía', lat: 37.2614, lon: -6.9447, author: 'Investigador', timestamp: '#06' },
-  { id: 'c_jaen', name: 'Jaén', province: 'Andalucía', lat: 37.7796, lon: -3.7849, author: 'Investigador', timestamp: '#07' },
-  { id: 'c_marbella', name: 'Marbella', province: 'Málaga', lat: 36.5101, lon: -4.8824, author: 'Investigador', timestamp: '#08' },
-  { id: 'c_malaga', name: 'Málaga', province: 'Andalucía', lat: 36.7213, lon: -4.4214, author: 'Investigador', timestamp: '#09' },
-  { id: 'c_valencia', name: 'Valencia', province: 'Comunitat Valenciana', lat: 39.4699, lon: -0.3763, author: 'Investigador', timestamp: '#10' },
-  { id: 'c_oviedo', name: 'Oviedo', province: 'Asturias', lat: 43.3619, lon: -5.8494, author: 'Investigador', timestamp: '#11' },
-  { id: 'c_santiago', name: 'Santiago de Compostela', province: 'Galicia', lat: 42.8782, lon: -8.5448, author: 'Investigador', timestamp: '#12' },
-  { id: 'c_guadalajara', name: 'Guadalajara', province: 'Castilla-La Mancha', lat: 40.6327, lon: -3.1669, author: 'Investigador', timestamp: '#13' }
+  { id: 'c_pontevedra', name: 'Pontevedra', province: 'Galicia', lat: 42.4336, lon: -8.6480, author: 'Investigador', timestamp: '#01 Alquiler' },
+  { id: 'c_toledo', name: 'Toledo', province: 'Castilla-La Mancha', lat: 39.8628, lon: -4.0273, author: 'Investigador', timestamp: '#02 Billete de ida' },
+  { id: 'c_cordoba', name: 'Córdoba', province: 'Andalucía', lat: 37.8882, lon: -4.7794, author: 'Investigador', timestamp: '#03 Campos' },
+  { id: 'c_teruel', name: 'Teruel', province: 'Aragón', lat: 40.3456, lon: -1.1072, author: 'Investigador', timestamp: '#04 Carretera' },
+  { id: 'c_palencia', name: 'Palencia', province: 'Castilla y León', lat: 42.0095, lon: -4.5287, author: 'Investigador', timestamp: '#05 Container' },
+  { id: 'c_huelva', name: 'Huelva', province: 'Andalucía', lat: 37.2614, lon: -6.9447, author: 'Investigador', timestamp: '#06 Libro' },
+  { id: 'c_jaen', name: 'Jaén', province: 'Andalucía', lat: 37.7796, lon: -3.7849, author: 'Investigador', timestamp: '#07 Llave' },
+  { id: 'c_lerida', name: 'Lérida (Lleida)', province: 'Cataluña', lat: 41.6176, lon: 0.6200, author: 'Investigador', timestamp: '#08 Mapa' },
+  { id: 'c_marbella', name: 'Marbella', province: 'Málaga', lat: 36.5101, lon: -4.8824, author: 'Investigador', timestamp: '#09 Mar' },
+  { id: 'c_malaga', name: 'Málaga', province: 'Andalucía', lat: 36.7213, lon: -4.4214, author: 'Investigador', timestamp: '#10 Nocilla' },
+  { id: 'c_valencia', name: 'Valencia', province: 'Comunitat Valenciana', lat: 39.4699, lon: -0.3763, author: 'Investigador', timestamp: '#11 Paella' },
+  { id: 'c_oviedo', name: 'Oviedo', province: 'Asturias', lat: 43.3619, lon: -5.8494, author: 'Investigador', timestamp: '#12 Pard' },
+  { id: 'c_santiago', name: 'Santiago de Compostela', province: 'Galicia', lat: 42.8782, lon: -8.5448, author: 'Investigador', timestamp: '#13 Restaurante' },
+  { id: 'c_salamanca', name: 'Salamanca', province: 'Castilla y León', lat: 40.9701, lon: -5.6635, author: 'Investigador', timestamp: '#14 Sobre' },
+  { id: 'c_madrid', name: 'Madrid', province: 'Comunidad de Madrid', lat: 40.4168, lon: -3.7038, author: 'Investigador', timestamp: '#15 Tiempo' },
+  { id: 'c_guadalajara', name: 'Guadalajara / Tarragona', province: 'Pendiente', lat: 40.6327, lon: -3.1669, author: 'Investigador', timestamp: '#16 Tarta' }
 ];
 
 export default function SpainMapSection({ activeProfile }) {
@@ -510,7 +513,7 @@ export default function SpainMapSection({ activeProfile }) {
           <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
             <Sparkles size={11} color="#f59e0b" /> Sugerencias:
           </span>
-          {['Pontevedra', 'Toledo', 'Córdoba', 'Teruel', 'Palencia', 'Huelva', 'Jaén', 'Marbella', 'Málaga', 'Valencia', 'Oviedo', 'Santiago', 'Guadalajara'].map(name => (
+          {['Pontevedra', 'Toledo', 'Córdoba', 'Teruel', 'Palencia', 'Huelva', 'Jaén', 'Lérida', 'Marbella', 'Málaga', 'Valencia', 'Oviedo', 'Santiago', 'Salamanca', 'Madrid', 'Guadalajara'].map(name => (
             <button
               key={name}
               onClick={() => setInputQuery(name)}
