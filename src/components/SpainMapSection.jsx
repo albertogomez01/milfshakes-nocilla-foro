@@ -24,12 +24,14 @@ const PRESET_CITIES = [
   { id: 'c_huelva', name: 'Huelva', province: 'Andalucía', lat: 37.2614, lon: -6.9447, author: 'Investigador', timestamp: '#06 Libro' },
   { id: 'c_jaen', name: 'Jaén', province: 'Andalucía', lat: 37.7796, lon: -3.7849, author: 'Investigador', timestamp: '#07 Llave' },
   { id: 'c_lerida', name: 'Lérida (Lleida)', province: 'Cataluña', lat: 41.6176, lon: 0.6200, author: 'Investigador', timestamp: '#08 Mapa' },
-  { id: 'c_malaga', name: 'Málaga', province: 'Andalucía', lat: 36.7213, lon: -4.4214, author: 'Investigador', timestamp: '#09 Nocilla' },
-  { id: 'c_valencia', name: 'Valencia', province: 'Comunitat Valenciana', lat: 39.4699, lon: -0.3763, author: 'Investigador', timestamp: '#10 Paella' },
-  { id: 'c_oviedo', name: 'Oviedo', province: 'Asturias', lat: 43.3619, lon: -5.8494, author: 'Investigador', timestamp: '#11 Pard' },
-  { id: 'c_santiago', name: 'Santiago de Compostela', province: 'Galicia', lat: 42.8782, lon: -8.5448, author: 'Investigador', timestamp: '#12 Restaurante' },
-  { id: 'c_salamanca', name: 'Salamanca', province: 'Castilla y León', lat: 40.9701, lon: -5.6635, author: 'Investigador', timestamp: '#13 Sobre' },
-  { id: 'c_madrid', name: 'Madrid', province: 'Comunidad de Madrid', lat: 40.4168, lon: -3.7038, author: 'Investigador', timestamp: '#14 Mar / Tiempo' }
+  { id: 'c_madrid', name: 'Madrid', province: 'Comunidad de Madrid', lat: 40.4168, lon: -3.7038, author: 'Investigador', timestamp: '#09 Mar / Tiempo' },
+  { id: 'c_malaga', name: 'Málaga', province: 'Andalucía', lat: 36.7213, lon: -4.4214, author: 'Investigador', timestamp: '#10 Nocilla' },
+  { id: 'c_valencia', name: 'Valencia', province: 'Comunitat Valenciana', lat: 39.4699, lon: -0.3763, author: 'Investigador', timestamp: '#11 Paella' },
+  { id: 'c_oviedo', name: 'Oviedo', province: 'Asturias', lat: 43.3619, lon: -5.8494, author: 'Investigador', timestamp: '#12 Pard' },
+  { id: 'c_santiago', name: 'Santiago de Compostela', province: 'Galicia', lat: 42.8782, lon: -8.5448, author: 'Investigador', timestamp: '#13 Restaurante' },
+  { id: 'c_salamanca', name: 'Salamanca', province: 'Castilla y León', lat: 40.9701, lon: -5.6635, author: 'Investigador', timestamp: '#14 Sobre' },
+  { id: 'c_pendiente_15', name: 'Pendiente (#15)', province: 'Por descubrir', lat: 40.0000, lon: -3.7000, author: 'Investigador', timestamp: '#15 Pendiente' },
+  { id: 'c_zaragoza', name: 'Zaragoza', province: 'Aragón', lat: 41.6488, lon: -0.8891, author: 'Investigador', timestamp: '#16 Zaragoza' }
 ];
 
 export default function SpainMapSection({ activeProfile }) {
@@ -511,7 +513,7 @@ export default function SpainMapSection({ activeProfile }) {
           <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
             <Sparkles size={11} color="#f59e0b" /> Sugerencias:
           </span>
-          {['Pontevedra', 'Toledo', 'Córdoba', 'Teruel', 'Palencia', 'Huelva', 'Jaén', 'Lérida', 'Málaga', 'Valencia', 'Oviedo', 'Santiago', 'Salamanca', 'Madrid'].map(name => (
+          {['Pontevedra', 'Toledo', 'Córdoba', 'Teruel', 'Palencia', 'Huelva', 'Jaén', 'Lérida', 'Madrid', 'Málaga', 'Valencia', 'Oviedo', 'Santiago', 'Salamanca', 'Zaragoza'].map(name => (
             <button
               key={name}
               onClick={() => setInputQuery(name)}
@@ -594,7 +596,7 @@ export default function SpainMapSection({ activeProfile }) {
             </div>
           </div>
 
-          {/* BANNER REQUERIDO: "ME FALTA LA TARTA" */}
+          {/* BANNER REQUERIDO: "PENDIENTE PUESTO 15" */}
           <div style={{
             margin: '8px 10px 4px 10px',
             padding: '10px 12px',
@@ -608,11 +610,11 @@ export default function SpainMapSection({ activeProfile }) {
               <span>OBJETO PENDIENTE DEL CASO</span>
             </div>
             <p style={{ margin: 0, fontSize: '0.75rem', color: '#f1f5f9', lineHeight: 1.3, fontWeight: 700 }}>
-              "Me falta únicamente <strong>la tarta 🎂</strong>"
+              "Pendiente la localización <strong>#15 por descubrir ❓</strong>"
             </p>
             <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '0.7rem', color: '#cbd5e1' }}>
               <span style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Cake size={12} color="#f43f5e" /> La Tarta
+                <Cake size={12} color="#f43f5e" /> #15 Pendiente
               </span>
             </div>
           </div>
