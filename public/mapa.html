@@ -624,8 +624,31 @@
       marker.bindPopup(popupHTML);
       markersMap.set(cityObj.id, marker);
 
+      updateRoutePolyline();
+
       if (openPopup) {
         setTimeout(() => marker.openPopup(), 1000);
+      }
+    }
+
+    let routePolyline = null;
+
+    function updateRoutePolyline() {
+      if (!map) return;
+      if (routePolyline) {
+        try { map.removeLayer(routePolyline); } catch (e) {}
+        routePolyline = null;
+      }
+      const coords = citiesList.map(c => [c.lat, c.lon]);
+      if (coords.length > 1) {
+        routePolyline = L.polyline(coords, {
+          color: '#f59e0b',
+          weight: 3.5,
+          opacity: 0.85,
+          dashArray: '8, 8',
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(map);
       }
     }
 
@@ -661,6 +684,7 @@
         }
 
         renderSidebar();
+        updateRoutePolyline();
         showToast(`"${cityName}" eliminada del mapa.`, 'info');
       }
     }

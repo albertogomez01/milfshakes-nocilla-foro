@@ -38,6 +38,7 @@ export default function SpainMapSection({ activeProfile }) {
   const mapContainerRef = useRef(null);
   const leafletMapRef = useRef(null);
   const markersRef = useRef(new Map());
+  const polylineRef = useRef(null);
 
   const [inputQuery, setInputQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -245,6 +246,24 @@ export default function SpainMapSection({ activeProfile }) {
         }
       }
     });
+
+    // Draw / Update Route Line connecting cities in exact order (#01 -> #16)
+    if (polylineRef.current) {
+      try { map.removeLayer(polylineRef.current); } catch (e) {}
+      polylineRef.current = null;
+    }
+
+    const routeCoords = citiesList.map(c => [c.lat, c.lon]);
+    if (routeCoords.length > 1) {
+      polylineRef.current = window.L.polyline(routeCoords, {
+        color: '#f59e0b',
+        weight: 3.5,
+        opacity: 0.85,
+        dashArray: '8, 8',
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(map);
+    }
   }, [citiesList, isMapReady]);
 
   // Handle Search & Geocode
